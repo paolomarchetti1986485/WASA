@@ -8,14 +8,14 @@ components:
     userId:
       schema:
         type: string
-        example: "user"
+        example: 0
       name: userId
       in: path
       required: true
       description: User's ID
     photoId:
       schema:
-        type: integer
+        type: string
         example: 0
       name: photoId
       in: path
@@ -93,7 +93,7 @@ components:
           type: integer
           example: 20
           readOnly: true
-        date&time:
+        dateTime:
           description: Photo's date of uploading
           type: string
           format: date-time
