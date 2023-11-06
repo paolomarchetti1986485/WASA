@@ -50,17 +50,20 @@ components:
           description: List of user's followers
           type: array
           items: 
-            $ref: '#/components/schemas/User'
+            type: string
+            example: "user123"
         following:
           description: List of user's followed users
           type: array
           items: 
-            $ref: '#/components/schemas/User'
+            type: string
+            example: "user456"
         bannedUsers:
           description: List of user's banned users
           type: array
           items: 
-            $ref: '#/components/schemas/User'
+            type: string
+            example: "user789"
         userProfile:
           description: User's profile
           type: array
@@ -103,6 +106,7 @@ components:
           type: array
           items: 
             type: string
+            example: "Nice photo!"
 paths:
   /session:
     post:
@@ -150,6 +154,12 @@ paths:
       responses:
         "201": 
           description: User's stream successfully gotten
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Photo"
   /user/{userId}/username:
     parameters:
       - $ref: "#/components/parameters/userId"
@@ -174,6 +184,10 @@ paths:
       responses:
         "201": 
           description: User's profile successfully gotten
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
         "404":
           description: User not found
       
@@ -306,6 +320,15 @@ paths:
       responses:
         "201":
           description: Photo commented successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  commentId:
+                    type: string
+                    example: "comment12345"
+               
         "404":
           description: Photo not found
     delete:
