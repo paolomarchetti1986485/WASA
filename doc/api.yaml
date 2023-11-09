@@ -3,34 +3,50 @@ info:
   description: WASAPhoto app backend REST API
   title: WASAPhoto API
   version: 1.0.0
+tags:
+  - name: user
+    description: Operations related to user management
+  - name: photo
+    description: Operations related to photo management
+  - name: login
+    description: Operations related to login management
 components:
+  securitySchemes:
+      loginAuth:            
+        type: http
+        scheme: bearer
+        bearerFormat: JWT    
   parameters:
     userId:
-      schema:
-        type: string
-        example: 0
       name: userId
       in: path
-      required: true
       description: User's ID
-    photoId:
+      required: true
       schema:
-        type: string
-        example: 0
+        type: integer
+        example: 1
+     
+    photoId:
       name: photoId
       in: path
       required: true
-      description: Photo's id
+      schema:
+        type: integer
+        example: 42
+     
   schemas:
     User:
       title: User
-      description: "This object represent a user in WASAPhoto"
+      description: This object represent a user in WASAPhoto
       type: object
       properties:
         username:
           description: User's username
           type: string
-          example: user
+          example: "user"
+          pattern: '^.*?$'
+          minLength: 3
+          maxLength: 20
         numFollowers:
           description: User's number of followers
           type: integer
@@ -49,33 +65,51 @@ components:
         followers:
           description: List of user's followers
           type: array
-          items: 
+          items:
             type: string
             example: "user123"
+            pattern: '^.*?$'
+            minLength: 3
+            maxLength: 20
+          minItems: 0  
+          maxItems: 1000
         following:
           description: List of user's followed users
           type: array
-          items: 
+          items:
             type: string
             example: "user456"
+            pattern: '^.*?$'
+            minLength: 3
+            maxLength: 20
+          minItems: 0  
+          maxItems: 1000
         bannedUsers:
           description: List of user's banned users
           type: array
-          items: 
+          items:
             type: string
             example: "user789"
+            pattern: '^.*?$'
+            minLength: 3
+            maxLength: 20
+          minItems: 0  
+          maxItems: 1000
         userProfile:
           description: User's profile
           type: array
           items:
             $ref: "#/components/schemas/Photo"
+          minItems: 0  
+          maxItems: 1000
         userStream:
           description: User's stream
           type: array
           items:
             $ref: "#/components/schemas/Photo"
-        
-          
+          minItems: 0  
+          maxItems: 1000
+         
     Photo:
       title: Photo
       description: "This object represent a photo in WASAPhoto"
@@ -101,12 +135,29 @@ components:
           type: string
           format: date-time
           example: "2023-11-06T17:32:28Z"
+         
         comments:
           description: Photo's list of comments
           type: array
-          items: 
+          items:
             type: string
             example: "Nice photo!"
+            pattern: '^.*?$'
+            minLength: 3
+            maxLength: 100
+          minItems: 0  
+          maxItems: 1000
+    Comment:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "What a great photo!"
+          pattern: '^.*$'
+          minLength: 1
+          maxLength: 500
+security:
+  - loginAuth: []  
 paths:
   /session:
     post:
@@ -126,8 +177,8 @@ paths:
               properties:
                 name:
                   type: string
-                  example: Maria
-                  pattern: 'ˆ.*?$'
+                  example: "Maria"
+                  pattern: '^.*?$'
                   minLength: 3
                   maxLength: 16
         required: true
@@ -140,19 +191,18 @@ paths:
                 type: object
                 properties:
                   identifier:
-                    # change here if you decide to use an integer
-                    # or any other type of identifier
                     type: string
                     example: "abcdef012345"
   /user/{userId}/stream:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
+      tags: ["user"]
       operationId: getMyStream
       summary: Get personal stream
       description: Retrieve a stream of photos from users the current user follows, in reverse chronological order.
       responses:
-        "201": 
+        "200":
           description: User's stream successfully gotten
           content:
             application/json:
@@ -160,10 +210,13 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Photo"
+                minItems: 0  
+                maxItems: 1000
   /user/{userId}/username:
     parameters:
       - $ref: "#/components/parameters/userId"
     put:
+      tags: ["user"]
       operationId: setMyUserName
       summary: Set username
       description: Allow the user to change their username.
@@ -172,17 +225,35 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/User"}
       responses:
-        "201":
+        '200':
           description: Username set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    example: "new_username"
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 20
+                  message:
+                    type: string
+                    example: "Username has been updated successfully"
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
   /user/{userId}/profile:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
+      tags: ["user"]
       operationId: getUserProfile
       summary: Get user profile
       description: Retrieve the profile information of a specific user, including their photos, total photo count, followers, and following.
       responses:
-        "201": 
+        "200":
           description: User's profile successfully gotten
           content:
             application/json:
@@ -190,9 +261,21 @@ paths:
                 $ref: "#/components/schemas/User"
         "404":
           description: User not found
-      
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found or does not exist.
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
+     
   /photos/:
     post:
+      tags: ["photo"]
       operationId: uploadPhoto
       summary: Upload Photo
       description: Upload a new photo with date, time, likes and comments.
@@ -200,123 +283,189 @@ paths:
         content:
           application/json:
             schema: { $ref: "#/components/schemas/Photo"}
+        required: true
       responses:
         "201":
           description: Photo uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
     delete:
+      tags: ["photo"]
       operationId: deletePhoto
       summary: Delete Photo
       description: Allow the user to remove one of their uploaded photos, which also removes associated likes and comments.
       responses:
-        "201":
+        "204":
           description: Photo deleted successfully
   /user/{userId}/follow:
     parameters:
       - $ref: "#/components/parameters/userId"
     post:
+      tags: ["user"]
       operationId: followUser
       summary: Follow user
       description: Follow another user.
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               type: object
               properties:
                 follower:
                   $ref: "#/components/schemas/User"
-                  
+                 
       responses:
-        "201":
+        "204":
           description: User followed successfully
-        "404":
+        '404':
           description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User to follow not found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
     delete:
+      tags: ["user"]
       operationId: unfollowUser
       summary: Unfollow user
       description: Unfollow a user the current user is following.
       responses:
-        "201":
+        "204":
           description: User unfollowed successfully
         "404":
           description: User not found
-    
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User to unfollow not found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
+   
   /user/{userId}/ban:
     parameters:
       - $ref: "#/components/parameters/userId"
     post:
+      tags: ["user"]
       operationId: banUser
       summary: Banned user
       description: Ban a user, making their information inaccessible to the current user.
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               type: object
               properties:
                 follower:
                   $ref: "#/components/schemas/User"
-                  
+                 
       responses:
-        "201":
+        "204":
           description: User banned successfully
-        "404":
+        '404':
           description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User to ban not found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
     delete:
+      tags: ["user"]
       operationId: unbanUser
       summary: Unban an user
       description: Remove a ban on a previously banned user, restoring their access to the current user's information.
       responses:
-        "201":
+        "204":
           description: User unbanned successfully
         "404":
           description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User to unban not found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
   /photos/{photoId}/like:
     parameters:
       - $ref: "#/components/parameters/photoId"
     post:
+      tags: ["photo"]
       operationId: likePhoto
       summary: Add like to a photo
       description: Allow the user to place a like on a photo.
-      requestBody:
-        content:
-          application/json:
-            schema: 
-              type: object
-              properties:
-                follower:
-                  $ref: "#/components/schemas/Photo"
-                  
       responses:
-        "201":
+        '204':
           description: Photo liked successfully
-        "404":
+        '404':
           description: Photo not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Photo not found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
     delete:
+      tags: ["photo"]
       operationId: unlikePhoto
       summary: Unlike a photo
       description: Remove a like from a photo.
       responses:
-        "201":
+        "204":
           description: Photo unliked successfully
         "404":
           description: Photo not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Photo to unlike not found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
   /photos/{photoId}/comments:
     parameters:
       - $ref: "#/components/parameters/photoId"
     post:
+      tags: ["photo"]
       operationId: commentPhoto
       summary: Add comment to a photo
       description: Add a comment to a photo, even if it was uploaded by the current user or others.
       requestBody:
         content:
           application/json:
-            schema: 
-              type: object
-              properties:
-                follower:
-                  $ref: "#/components/schemas/Photo"
-                  
+            schema:
+              $ref: '#/components/schemas/Comment'
       responses:
         "201":
           description: Photo commented successfully
@@ -328,17 +477,41 @@ paths:
                   commentId:
                     type: string
                     example: "comment12345"
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
                
         "404":
           description: Photo not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Photo to comment on not found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
     delete:
+      tags: ["photo"]
       operationId: uncommentPhoto
       summary: Uncomment a photo
       description: Remove a comment added by the current user on a photo.
       responses:
-        "201":
+        "204":
           description: Photo uncommented successfully
         "404":
           description: Photo not found
-    
-  
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Photo or comment to remove not found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
