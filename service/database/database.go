@@ -88,7 +88,7 @@ func New(db *sql.DB) (AppDatabase, error) {
         `CREATE TABLE IF NOT EXISTS Comments (CommentID INTEGER PRIMARY KEY, PhotoID INTEGER, UserID INTEGER, CommentText TEXT NOT NULL, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (PhotoID) REFERENCES Photos(PhotoID), FOREIGN KEY (UserID) REFERENCES Users(UserID));`,
         `CREATE TABLE IF NOT EXISTS Likes (PhotoID INTEGER, UserID INTEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (PhotoID, UserID), FOREIGN KEY (PhotoID) REFERENCES Photos(PhotoID), FOREIGN KEY (UserID) REFERENCES Users(UserID));`,
         `CREATE TABLE IF NOT EXISTS Followers (FollowerID INTEGER, FollowingID INTEGER, PRIMARY KEY (FollowerID, FollowingID), FOREIGN KEY (FollowerID) REFERENCES Users(UserID), FOREIGN KEY (FollowingID) REFERENCES Users(UserID));`,
-		`CREATE TABLE IF NOT EXISTS Followers (BannedUserID INTEGER, UserID INTEGER, BanDateTime DATETIME, PRIMARY KEY (BanUserID, UserID), FOREIGN KEY (UserID) REFERENCES Users(UserID), FOREIGN KEY (BannedUserID) REFERENCES Users(UserID));`,
+		`CREATE TABLE IF NOT EXISTS Banned (BannedUserID INTEGER, UserID INTEGER, BanDateTime DATETIME, PRIMARY KEY (BanUserID, UserID), FOREIGN KEY (UserID) REFERENCES Users(UserID), FOREIGN KEY (BannedUserID) REFERENCES Users(UserID));`,
         // Add other table creation statements here for `BannedUsers` if applicable.
     }
 
