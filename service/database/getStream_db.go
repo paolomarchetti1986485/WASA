@@ -1,5 +1,7 @@
 package database
-
+import (
+	"fmt"
+)
 func (db *appdbimpl) GetUserStream(userId int) ([]Photo, error) {
     var photos []Photo
 
@@ -18,7 +20,7 @@ func (db *appdbimpl) GetUserStream(userId int) ([]Photo, error) {
 
     for rows.Next() {
         var photo Photo
-        if err := rows.Scan(&photo.ID, &photo.UserID, &photo.DateTime); err != nil {
+        if err := rows.Scan(&photo.PhotoID, &photo.UserID, &photo.UploadDateTime); err != nil {
             return nil, fmt.Errorf("error scanning photo: %w", err)
         }
         photos = append(photos, photo)

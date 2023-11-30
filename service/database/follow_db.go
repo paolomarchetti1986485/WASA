@@ -1,18 +1,17 @@
 package database
+import (
+	"fmt"
+)
 
-func (db *appdbimpl) FollowUser(followerID, followingID int) error {
-    stmt, err := db.c.Prepare("INSERT INTO Followers (FollowerID, FollowingID) VALUES (?, ?)")
-    if err != nil {
-        return fmt.Errorf("prepare follow user statement: %w", err)
-    }
-    defer stmt.Close()
+func (db *appdbimpl) FollowUser(follower int, followed int) error {
 
-    _, err = stmt.Exec(followerID, followingID)
-    if err != nil {
-        return fmt.Errorf("execute follow user statement: %w", err)
-    }
+	_, err := db.c.Exec("INSERT INTO followers (FollowerID,FollowingID) VALUES (?, ?)",
+		follower, followed)
+	if err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 func (db *appdbimpl) UnfollowUser(followerID, followingID int) error {
     stmt, err := db.c.Prepare("DELETE FROM Followers WHERE FollowerID = ? AND FollowingID = ?")

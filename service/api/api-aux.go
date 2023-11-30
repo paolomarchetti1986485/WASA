@@ -1,12 +1,13 @@
 package api
 
 import (
-	"net/http"
-	"strings"
-	"fmt"
+	
     "regexp"
     "unicode/utf8"
+    
+
 )
+
 // IsValidUsername checks if the username meets the API requirements.
 // It must be 3-20 characters long and match the provided pattern.
 func IsValidUsername(username string) bool {
@@ -29,4 +30,3 @@ func IsValidUsername(username string) bool {
 
     return true
 }
-func GetUserByUsername

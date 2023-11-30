@@ -1,5 +1,8 @@
 package database
-
+import (
+	"fmt"
+	
+)
 func (db *appdbimpl) AddComment(photoID, userID int, commentText string) (int, error) {
     stmt, err := db.c.Prepare("INSERT INTO Comments (PhotoID, UserID, CommentText) VALUES (?, ?, ?)")
     if err != nil {

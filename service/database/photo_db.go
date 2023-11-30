@@ -1,5 +1,8 @@
 package database
-
+import (
+	"fmt"
+    "time"
+)
 func (db *appdbimpl) UploadPhoto(userID int, uploadDateTime time.Time) (int, error) {
     stmt, err := db.c.Prepare("INSERT INTO Photos (UserID, UploadDateTime) VALUES (?, ?)")
     if err != nil {

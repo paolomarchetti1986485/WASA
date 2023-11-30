@@ -1,5 +1,7 @@
 package database
-
+import (
+	"fmt"
+)
 func (db *appdbimpl) AddLike(photoID, userID int) error {
     stmt, err := db.c.Prepare("INSERT INTO Likes (PhotoID, UserID) VALUES (?, ?)")
     if err != nil {

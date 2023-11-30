@@ -3,14 +3,11 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"path/filepath"
-	"WASA/service/api/reqcontext"
-
+    "database/sql"
+	"errors"
 	"github.com/julienschmidt/httprouter"
 )
 
-// getHelloWorld is an example of HTTP endpoint that returns "Hello world!" as a plain text
 func (rt *_router) loginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     var user User
     err := json.NewDecoder(r.Body).Decode(&user)
@@ -18,11 +15,7 @@ func (rt *_router) loginHandler(w http.ResponseWriter, r *http.Request, ps httpr
         rt.baseLogger.WithError(err).Warning("Wrong JSON received")
         w.WriteHeader(http.StatusBadRequest)
         return
-    } else if !IsValidUsernameIdentifier(user.IdUser) {
-        w.WriteHeader(http.StatusBadRequest)
-        return
-    }
-
+    } 
     // Check if user exists (assuming you have a function for this)
     userID, err := rt.db.GetUserByUsername(user.Username)
     if err != nil {

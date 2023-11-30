@@ -3,20 +3,19 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"path/filepath"
-	"WASA/service/api/reqcontext"
+	
+    "strconv"
 
 	"github.com/julienschmidt/httprouter"
 )
 // UsernameUpdateRequest represents the request structure to update a username.
 type UsernameUpdateRequest struct {
-    Username Username `json:"username"`
+    Username string `json:"username"`
 }
 
 // UsernameUpdateResponse represents the response structure after updating a username.
 type UsernameUpdateResponse struct {
-    Username Username `json:"username"`
+    Username string `json:"username"`
     Message  string   `json:"message"`
 }
 

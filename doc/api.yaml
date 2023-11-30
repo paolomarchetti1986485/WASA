@@ -33,20 +33,14 @@ components:
       description: User's ID
       required: true
       schema:
-        description: User's identifier
-        type: integer
-        example: 1
-        readOnly: true
+        $ref: "#/components/schemas/User/properties/id"
     photoId:
       name: photoId
       in: path
       description: Photo's ID
       required: true
       schema:
-        description: Photo's identifier
-        type: integer
-        example: 42
-        readOnly: true
+        $ref: "#/components/schemas/Photo/properties/id"
     commentId:
       name: commentId
       in: path

@@ -1,36 +1,50 @@
 package api
 
 import (
-	"encoding/json"
+	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
-	"WASA/service/api/reqcontext"
-
+	"strconv"
+    "log"
 	"github.com/julienschmidt/httprouter"
 )
+
+// addFollower handles the request to follow a user.
 func (rt *_router) followUserHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    followerID, err := strconv.Atoi(ps.ByName("userId"))
+    log.Println("followUserHandler called")
+    // Extract followerID and followingID from the request parameters
+    followerIDStr := ps.ByName("userId")
+    followingIDStr := ps.ByName("followerId")
+
+    // Convert IDs from string to int
+    followerID, err := strconv.Atoi(followerIDStr)
     if err != nil {
-        http.Error(w, "Invalid follower ID", http.StatusBadRequest)
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprintf(w, "Invalid follower ID")
         return
     }
 
-    followingID, err := strconv.Atoi(ps.ByName("followerId"))
+    followingID, err := strconv.Atoi(followingIDStr)
     if err != nil {
-        http.Error(w, "Invalid following ID", http.StatusBadRequest)
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprintf(w, "Invalid following ID")
         return
     }
 
+    // Users can't follow themselves
+    if followerID == followingID {
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprintf(w, "Users can't follow themselves")
+        return
+    }
+
+    // Add the follower using the database function
     err = rt.db.FollowUser(followerID, followingID)
     if err != nil {
-        rt.baseLogger.WithError(err).Error("Failed to follow user")
         w.WriteHeader(http.StatusInternalServerError)
+        fmt.Fprintf(w, "Error adding follower: %s", err)
         return
     }
 
-    response := map[string]string{"message": "You are now following this user."}
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusCreated)
-    json.NewEncoder(w).Encode(response)
+    // If successful, respond with a 204 No Content status
+    w.WriteHeader(http.StatusNoContent)
 }

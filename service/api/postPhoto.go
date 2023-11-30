@@ -3,10 +3,9 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"path/filepath"
-	"WASA/service/api/reqcontext"
-
+	
+    "strconv"
+    "time"
 	"github.com/julienschmidt/httprouter"
 )
 func (rt *_router) uploadPhotoHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

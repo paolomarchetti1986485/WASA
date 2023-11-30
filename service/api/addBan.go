@@ -3,10 +3,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"path/filepath"
-	"WASA/service/api/reqcontext"
-
+	
+    "strconv"
 	"github.com/julienschmidt/httprouter"
 )
 func (rt *_router) banUserHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

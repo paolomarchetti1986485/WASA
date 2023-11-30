@@ -1,5 +1,8 @@
 package database
-
+import (
+	"fmt"
+	
+)
 func (db *appdbimpl) BanUser(bannedID, userID int) error {
     // Prepare SQL statement for inserting a new ban record
     stmt, err := db.c.Prepare("INSERT INTO BannedUsers (BannedUserID, UserID, BanDateTime) VALUES (?, ?, CURRENT_TIMESTAMP)")

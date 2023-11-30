@@ -1,7 +1,8 @@
 package database
 
-import "time"
-
+import (
+    "time"
+)
 // User represents a user in the WASAPhoto app.
 type User struct {
     UserID   int    `json:"userId"` //User's ID
@@ -13,6 +14,8 @@ type Photo struct {
     PhotoID        int       `json:"photoId"` // Photo's ID
     UserID         int       `json:"userId"` //ID of the User who posted the photo
     UploadDateTime time.Time `json:"uploadDateTime"` // Date & time in which the photo was uploaded
+    Comments       []Comment
+    Likes          []Like
 }
 
 // Comment represents a comment made on a photo.

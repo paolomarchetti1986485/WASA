@@ -1,5 +1,7 @@
 package database
-
+import (
+	"fmt"
+)
 func (db *appdbimpl) AddUser(username string) (int, error) {
     stmt, err := db.c.Prepare("INSERT INTO Users (Username) VALUES (?)")
     if err != nil {
