@@ -6,12 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"time"
-	
 )
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-    UploadPhoto(userID int, uploadDateTime time.Time) (int, error)
+    UploadPhoto(userID int, uploadDateTime time.Time, PhotoData []byte) (int, error)
     RemovePhoto(photoID int) error
     AddUser(username string) (int, error)
     UpdateUsername(userID int, newUsername string) error
@@ -73,7 +72,7 @@ func (db *appdbimpl) Ping() error {
 func createDatabase(db *sql.DB) error {
 	tables := [6]string{
 		`CREATE TABLE IF NOT EXISTS Users (UserID INTEGER PRIMARY KEY, Username TEXT NOT NULL);`,
-        `CREATE TABLE IF NOT EXISTS Photos (PhotoID INTEGER PRIMARY KEY, UserID INTEGER, UploadDateTime TEXT, FOREIGN KEY (UserID) REFERENCES Users(UserID));`,
+        `CREATE TABLE IF NOT EXISTS Photos (PhotoID INTEGER PRIMARY KEY, UserID INTEGER, UploadDateTime TEXT, PhotoData BLOB, FOREIGN KEY (UserID) REFERENCES Users(UserID));`,
         `CREATE TABLE IF NOT EXISTS Comments (CommentID INTEGER PRIMARY KEY, PhotoID INTEGER, UserID INTEGER, CommentText TEXT NOT NULL, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (PhotoID) REFERENCES Photos(PhotoID), FOREIGN KEY (UserID) REFERENCES Users(UserID));`,
         `CREATE TABLE IF NOT EXISTS Likes (PhotoID INTEGER, UserID INTEGER, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (PhotoID, UserID), FOREIGN KEY (PhotoID) REFERENCES Photos(PhotoID), FOREIGN KEY (UserID) REFERENCES Users(UserID));`,
         `CREATE TABLE IF NOT EXISTS Followers (FollowerID INTEGER, FollowingID INTEGER, PRIMARY KEY (FollowerID, FollowingID), FOREIGN KEY (FollowerID) REFERENCES Users(UserID), FOREIGN KEY (FollowingID) REFERENCES Users(UserID));`,
