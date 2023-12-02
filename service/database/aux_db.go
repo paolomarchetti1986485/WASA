@@ -17,6 +17,33 @@ func (db *appdbimpl) GetUserByUsername(username string) (int, error) {
     }
     return userID, nil
 }
+func (db *appdbimpl) GetPhotoComments(photoID int) ([]Comment, error) {
+    var comments []Comment
+
+    query := "SELECT CommentID, UserID, CommentText, Timestamp FROM Comments WHERE PhotoID = ?"
+    rows, err := db.c.Query(query, photoID)
+    if err != nil {
+        return nil, fmt.Errorf("error querying comments: %w", err)
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var comment Comment
+        comment.PhotoID = photoID // Set the PhotoID for each comment
+        if err := rows.Scan(&comment.CommentID, &comment.UserID, &comment.CommentText, &comment.Timestamp); err != nil {
+            return nil, fmt.Errorf("error scanning comment: %w", err)
+        }
+        comments = append(comments, comment)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("error in rows: %w", err)
+    }
+
+    return comments, nil
+}
+
+
 func (db *appdbimpl) GetUserPhotos(userId int) ([]Photo, error) {
     var photos []Photo
 
@@ -31,6 +58,19 @@ func (db *appdbimpl) GetUserPhotos(userId int) ([]Photo, error) {
         if err := rows.Scan(&photo.PhotoID, &photo.UploadDateTime); err != nil {
             return nil, fmt.Errorf("error scanning photo: %w", err)
         }
+
+        // Fetch comments for each photo
+        photo.Comments, err = db.GetPhotoComments(photo.PhotoID)
+        if err != nil {
+            return nil, fmt.Errorf("error fetching photo comments: %w", err)
+        }
+
+        // Fetch likes for each photo
+        photo.Likes, err = db.GetPhotoLikes(photo.PhotoID)
+        if err != nil {
+            return nil, fmt.Errorf("error fetching photo likes: %w", err)
+        }
+
         photos = append(photos, photo)
     }
 
@@ -40,6 +80,33 @@ func (db *appdbimpl) GetUserPhotos(userId int) ([]Photo, error) {
 
     return photos, nil
 }
+
+func (db *appdbimpl) GetPhotoLikes(photoID int) ([]Like, error) {
+    var likes []Like
+
+    query := "SELECT UserID, Timestamp FROM Likes WHERE PhotoID = ?"
+    rows, err := db.c.Query(query, photoID)
+    if err != nil {
+        return nil, fmt.Errorf("error querying likes: %w", err)
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var like Like
+        like.PhotoID = photoID // Set the PhotoID for each like
+        if err := rows.Scan(&like.UserID, &like.Timestamp); err != nil {
+            return nil, fmt.Errorf("error scanning like: %w", err)
+        }
+        likes = append(likes, like)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("error in rows: %w", err)
+    }
+
+    return likes, nil
+}
+
 func (db *appdbimpl) GetUser(userId int) (User, error) {
     var user User
 

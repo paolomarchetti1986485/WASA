@@ -16,6 +16,7 @@ type Photo struct {
     UploadDateTime time.Time `json:"uploadDateTime"` // Date & time in which the photo was uploaded
     Comments       []Comment
     Likes          []Like
+    PhotoData      []byte    `json:"-"` // Excluding from JSON representation
 }
 
 // Comment represents a comment made on a photo.
