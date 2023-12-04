@@ -22,6 +22,19 @@ func (db *appdbimpl) GetUserStream(userId int) ([]Photo, error) {
         if err := rows.Scan(&photo.PhotoID, &photo.UserID, &photo.UploadDateTime); err != nil {
             return nil, fmt.Errorf("error scanning photo: %w", err)
         }
+
+        // Fetch comments for each photo
+        photo.Comments, err = db.GetPhotoComments(photo.PhotoID)
+        if err != nil {
+            return nil, fmt.Errorf("error fetching photo comments: %w", err)
+        }
+
+        // Fetch likes for each photo
+        photo.Likes, err = db.GetPhotoLikes(photo.PhotoID)
+        if err != nil {
+            return nil, fmt.Errorf("error fetching photo likes: %w", err)
+        }
+
         photos = append(photos, photo)
     }
 
