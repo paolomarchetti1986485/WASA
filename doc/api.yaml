@@ -122,8 +122,12 @@ components:
         userId:
           $ref: "#/components/schemas/User"
     
-    LikeId:
-      $ref: "#/components/schemas/User"
+    Like:
+      type: object
+      description: like of a photo
+      properties:
+        likeId:
+          $ref: "#/components/schemas/User"
     UnuploadedPhoto:
       title: UnuploadedPhoto
       description: Photo that has been not uploaded yet
@@ -161,7 +165,7 @@ components:
           description: Photo's list of likes
           type: array
           items:
-            $ref: "#/components/schemas/LikeId"
+            $ref: "#/components/schemas/Like/properties/likeId"
           minItems: 0  
           maxItems: 1000
     Profile:
@@ -467,7 +471,7 @@ paths:
                     minLength: 1
                     maxLength: 100
                     
-  /user/{userId}/photos/{photoId}/likes/{likeId}:
+  /photos/{photoId}/likes/{likeId}:
     parameters:
       - $ref: "#/components/parameters/photoId"
       - $ref: "#/components/parameters/userId"
@@ -483,7 +487,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LikeId"
+                $ref: "#/components/schemas/Like/properties/likeId"
         "404":
           description: Photo not found
           content:
