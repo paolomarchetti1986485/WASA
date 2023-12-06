@@ -229,6 +229,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Login"
+  /users:
+    get:
+      tags: ["user"]
+      summary: List all users
+      description: Retrieve a list of all users in the WASAPhoto app.
+      operationId: listAllUsers
+      responses:
+        "200":
+          description: List of users successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "404":
+          description: No users found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No users found."
+                    pattern: '^.*?$'
+                    minLength: 3
+                    maxLength: 100
+  /user/{userId}:
+    delete:
+      tags: ["user"]
+      summary: Delete a user
+      description: Deletes a user by their unique ID.
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        "204":
+          description: User deleted successfully
+        "400":
+          description: Invalid user ID supplied
+        "404":
+          description: User not found
+        "500":
+          description: Server error
   /user/{userId}/stream:
     parameters:
       - $ref: "#/components/parameters/userId"
