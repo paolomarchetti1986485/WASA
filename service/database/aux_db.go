@@ -218,3 +218,34 @@ func (db *appdbimpl) GetUserFollowing(userId int) ([]User, error) {
 
     return following, nil
 }
+func (db *appdbimpl) GetAllUsers() ([]User, error) {
+    var users []User
+
+    // SQL query to retrieve all users.
+    query := "SELECT UserID, Username FROM Users"
+    rows, err := db.c.Query(query)
+    if err != nil {
+        // An error occurred while querying the users.
+        return nil, fmt.Errorf("error querying users: %w", err)
+    }
+    defer rows.Close()
+
+    // Iterating over the query results.
+    for rows.Next() {
+        var user User
+        // Scanning the row into the user struct.
+        if err := rows.Scan(&user.UserID, &user.Username); err != nil {
+            // An error occurred while scanning the user.
+            return nil, fmt.Errorf("error scanning user: %w", err)
+        }
+        // Appending the user to the slice of users.
+        users = append(users, user)
+    }
+
+    // Checking for any errors that occurred during the iteration.
+    if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("error in rows: %w", err)
+    }
+
+    return users, nil
+}

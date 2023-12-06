@@ -10,6 +10,7 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
+	DeleteUserByID(userID int) error
     UploadPhoto(userID int, uploadDateTime time.Time, PhotoData []byte) (int, error)
     RemovePhoto(photoID int) error
     AddUser(username string) (int, error)
@@ -29,6 +30,7 @@ type AppDatabase interface {
     GetUserFollowers(userId int) ([]User, error)
     GetUserFollowing(userId int) ([]User, error)
 	Ping() error
+	GetAllUsers() ([]User, error)
 }
 
 type appdbimpl struct {

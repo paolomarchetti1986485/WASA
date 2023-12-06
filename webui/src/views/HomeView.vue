@@ -4,16 +4,27 @@ export default {
 		return {
 			errormsg: null,
 			loading: false,
-			some_data: null,
+			user: null,
 		}
 	},
 	methods: {
+		async delete(id){
+			this.loading = true;
+			this.errormsg = null;
+			try {
+				await this.$axios.delete("/user" + id);
+				await this.refresh();
+			} catch (e) {
+				this.errormsg = e.toString();
+			}
+			this.loading = false;
+		},
 		async refresh() {
 			this.loading = true;
 			this.errormsg = null;
 			try {
-				let response = await this.$axios.get("/");
-				this.some_data = response.data;
+				let response = await this.$axios.get("/user");
+				this.user = response.data;
 			} catch (e) {
 				this.errormsg = e.toString();
 			}
@@ -49,6 +60,13 @@ export default {
 		</div>
 
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+		<ul>
+			<li v-for="u in user">
+				ID: {{u.userId}}, 
+				Username: {{u.username}}
+				<a href="javascript:" @click="removeUserHandler(u.userId)">[DELETE]</a>
+			</li>
+		</ul>
 	</div>
 </template>
 

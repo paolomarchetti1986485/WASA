@@ -57,3 +57,13 @@ func (db *appdbimpl) UpdateUsername(userID int, newUsername string) error {
     // Return nil if the operation is successful (no error).
     return nil
 }
+// DeleteUserByID deletes a user from the database based on their ID.
+func (db *appdbimpl) DeleteUserByID(userID int) error {
+    // SQL query to delete the user.
+    _, err := db.c.Exec("DELETE FROM Users WHERE UserID = ?", userID)
+    if err != nil {
+        return fmt.Errorf("error deleting user: %w", err)
+    }
+
+    return nil
+}

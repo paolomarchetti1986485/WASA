@@ -21,6 +21,9 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.DELETE("/photos/:photoId/likes/:likeId", rt.removeLikeHandler)
 	rt.router.POST("/user/:userId/photos/:photoId/comments", rt.addCommentHandler)
 	rt.router.DELETE("/user/:userId/photos/:photoId/comments/:commentId", rt.removeCommentHandler)
+	rt.router.GET("/user", rt.GetAllUsersHandler)
+	rt.router.DELETE("/user/:userId", rt.DeleteUserHandler)
+
 	
 	
 	// Special routes
