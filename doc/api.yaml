@@ -165,7 +165,7 @@ components:
           description: Photo's list of likes
           type: array
           items:
-            $ref: "#/components/schemas/Like/properties/likeId"
+            $ref: "#/components/schemas/Like"
           minItems: 0  
           maxItems: 1000
     Profile:
@@ -229,7 +229,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Login"
-  /users:
+  /user:
     get:
       tags: ["user"]
       summary: List all users
@@ -241,17 +241,22 @@ paths:
           content:
             application/json:
               schema:
+                description: User's list
                 type: array
                 items:
                   $ref: "#/components/schemas/User"
+                minItems: 0  
+                maxItems: 1000
         "404":
           description: No users found
           content:
             application/json:
               schema:
+                description: No users found
                 type: object
                 properties:
                   message:
+                    description: No users found message
                     type: string
                     example: "No users found."
                     pattern: '^.*?$'
@@ -357,7 +362,7 @@ paths:
                     minLength: 1
                     maxLength: 100
      
-  /users/{userId}/photos:
+  /user/{userId}/photos:
     parameters:
      - $ref: "#/components/parameters/userId"
     post:
@@ -377,7 +382,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Photo"
-  /users/{userId}/photos/{photoId}:
+  /user/{userId}/photos/{photoId}:
     parameters:
       - $ref: "#/components/parameters/userId"
       - $ref: "#/components/parameters/photoId"
@@ -519,7 +524,6 @@ paths:
   /photos/{photoId}/likes/{likeId}:
     parameters:
       - $ref: "#/components/parameters/photoId"
-      - $ref: "#/components/parameters/userId"
       - $ref: "#/components/parameters/likeId"
     put:
       tags: ["like"]
