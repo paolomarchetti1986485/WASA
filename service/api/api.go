@@ -37,8 +37,8 @@ See the `main.go` file inside the `cmd/webapi` for a full usage example.
 package api
 
 import (
-	"errors"
 	"WASA/service/database"
+	"errors"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
 	"net/http"
