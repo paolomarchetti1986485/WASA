@@ -6,14 +6,14 @@ import (
 
 // User represents a user in the WASAPhoto app.
 type User struct {
-	UserID   int    `json:"userId"`   //User's ID
+	UserID   int    `json:"userId"`   // User's ID
 	Username string `json:"username"` // User's username
 }
 
 // Photo represents a photo uploaded by a user.
 type Photo struct {
 	PhotoID        int       `json:"photoId"`        // Photo's ID
-	UserID         int       `json:"userId"`         //ID of the User who posted the photo
+	UserID         int       `json:"userId"`         // ID of the User who posted the photo
 	UploadDateTime time.Time `json:"uploadDateTime"` // Date & time in which the photo was uploaded
 	Comments       []Comment
 	Likes          []Like
