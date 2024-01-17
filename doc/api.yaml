@@ -293,13 +293,8 @@ paths:
           content:
             application/json:
               schema:
-                description: User's stream gotten
-                type: array
-                items:
-                  $ref: "#/components/schemas/Stream"
-                minItems: 0  
-                maxItems: 1000
-                
+                $ref: "#/components/schemas/Stream"
+
   /user/{userId}/username:
     parameters:
       - $ref: "#/components/parameters/userId"
