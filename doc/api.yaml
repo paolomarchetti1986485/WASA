@@ -357,7 +357,7 @@ paths:
                     minLength: 1
                     maxLength: 100
      
-  /user/{userId}/photos:
+  /user/{userId}/photos/:
     parameters:
      - $ref: "#/components/parameters/userId"
     post:
@@ -559,7 +559,7 @@ paths:
         "404":
           description: Photo or like not found
           
-  /user/{userId}/photos/{photoId}/comments:
+  /user/{userId}/photos/{photoId}/comments/:
     parameters:
       - $ref: "#/components/parameters/photoId"
       - $ref: "#/components/parameters/userId"
