@@ -2,13 +2,19 @@ package api
 
 import (
 	"WASA/service/api/reqcontext"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // removeLikeHandler handles the HTTP request to remove a 'like' from a photo.
 func (rt *_router) removeLikeHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	token := extractBearerToken(r)
+	if !validToken(token) {
+		http.Error(w, "Unauthorized: Invalid or missing token", http.StatusUnauthorized)
+		return
+	}
 	// Extract the like ID (which is being used as the user ID in this context) from the URL parameters and convert it to an integer.
 	likeId, err := strconv.Atoi(ps.ByName("likeId"))
 	if err != nil {
@@ -33,7 +39,10 @@ func (rt *_router) removeLikeHandler(w http.ResponseWriter, r *http.Request, ps 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	if token != likeId {
+		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
+		return
+	}
 	// If the operation is successful, respond with a 204 No Content status.
 	// This indicates that the action has been successfully processed, but there is no content to return.
 	w.WriteHeader(http.StatusNoContent)

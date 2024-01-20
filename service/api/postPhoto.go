@@ -3,15 +3,21 @@ package api
 import (
 	"WASA/service/api/reqcontext"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // uploadPhotoHandler handles the HTTP request to upload a photo.
 func (rt *_router) uploadPhotoHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	token := extractBearerToken(r)
+	if !validToken(token) {
+		http.Error(w, "Unauthorized: Invalid or missing token", http.StatusUnauthorized)
+		return
+	}
 	// Extract and validate the user ID from URL parameters.
 	userId, err := strconv.Atoi(ps.ByName("userId"))
 	if err != nil {
@@ -53,7 +59,10 @@ func (rt *_router) uploadPhotoHandler(w http.ResponseWriter, r *http.Request, ps
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	if token != userId {
+		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
+		return
+	}
 	// Prepare and send a successful response back to the client.
 	w.Header().Set("Content-Type", "application/json") // Set the content type to JSON.
 	w.WriteHeader(http.StatusCreated)                  // Send a 201 HTTP status code indicating the resource was successfully created.

@@ -12,6 +12,11 @@ import (
 // addLikeHandler handles HTTP requests to add a 'like' to a photo.
 // It extracts likeId and photoId from the request parameters and performs the like operation.
 func (rt *_router) addLikeHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	token := extractBearerToken(r)
+	if !validToken(token) {
+		http.Error(w, "Unauthorized: Invalid or missing token", http.StatusUnauthorized)
+		return
+	}
 	// Extract the likeId from the URL parameters and convert it to an integer.
 	// In this context, likeId is used interchangeably with userId.
 	likeId, err := strconv.Atoi(ps.ByName("likeId"))
@@ -37,7 +42,10 @@ func (rt *_router) addLikeHandler(w http.ResponseWriter, r *http.Request, ps htt
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	if token != likeId {
+		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
+		return
+	}
 	// Prepare the response containing the likeId.
 	response := map[string]LikeId{"likeId": LikeId(likeId)}
 	w.Header().Set("Content-Type", "application/json") // Set the content type to JSON.

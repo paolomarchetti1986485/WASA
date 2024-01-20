@@ -3,14 +3,20 @@ package api
 import (
 	"WASA/service/api/reqcontext"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // banUserHandler is an HTTP handler for banning a user.
 // It retrieves user IDs from the request parameters and performs the ban operation.
 func (rt *_router) banUserHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	token := extractBearerToken(r)
+	if !validToken(token) {
+		http.Error(w, "Unauthorized: Invalid or missing token", http.StatusUnauthorized)
+		return
+	}
 	// Extract the user ID of the admin or the user who is performing the ban from the URL parameters.
 	userId, err := strconv.Atoi(ps.ByName("userId"))
 	if err != nil {
@@ -35,7 +41,10 @@ func (rt *_router) banUserHandler(w http.ResponseWriter, r *http.Request, ps htt
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	if token != userId {
+		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
+		return
+	}
 	// Prepare a success response message.
 	response := map[string]string{"message": "User has been successfully banned."}
 	w.Header().Set("Content-Type", "application/json") // Set the content type to JSON.

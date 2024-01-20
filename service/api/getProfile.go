@@ -4,13 +4,19 @@ import (
 	"WASA/service/api/reqcontext"
 	"WASA/service/database"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // getProfileHandler handles HTTP requests to retrieve a user's profile information.
 func (rt *_router) getProfileHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	token := extractBearerToken(r)
+	if !validToken(token) {
+		http.Error(w, "Unauthorized: Invalid or missing token", http.StatusUnauthorized)
+		return
+	}
 	// Initialize slices to store followers, following users, and photos.
 	var followers []database.User
 	var following []database.User
@@ -57,7 +63,10 @@ func (rt *_router) getProfileHandler(w http.ResponseWriter, r *http.Request, ps 
 		Followers: followers,
 		Following: following,
 	}
-
+	if token != userId {
+		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
+		return
+	}
 	// Set the Content-Type header to application/json and encode the profile into JSON.
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(profile)

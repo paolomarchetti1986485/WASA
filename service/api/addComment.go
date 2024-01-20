@@ -3,14 +3,20 @@ package api
 import (
 	"WASA/service/api/reqcontext"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // addCommentHandler is an HTTP handler for adding a comment to a photo.
 // It extracts user and photo IDs from the request parameters and decodes the comment from the request body.
 func (rt *_router) addCommentHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	token := extractBearerToken(r)
+	if !validToken(token) {
+		http.Error(w, "Unauthorized: Invalid or missing token", http.StatusUnauthorized)
+		return
+	}
 	// Extract the user ID from the URL parameters.
 	userId, err := strconv.Atoi(ps.ByName("userId"))
 	if err != nil {
@@ -43,7 +49,10 @@ func (rt *_router) addCommentHandler(w http.ResponseWriter, r *http.Request, ps 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	if token != userId {
+		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
+		return
+	}
 	// Prepare the response containing the comment ID.
 	w.Header().Set("Content-Type", "application/json") // Set the content type to JSON.
 	w.WriteHeader(http.StatusCreated)                  // Send a 201 HTTP status code indicating the resource was successfully created.

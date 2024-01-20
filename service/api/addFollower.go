@@ -3,16 +3,22 @@ package api
 import (
 	"WASA/service/api/reqcontext"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // followUserHandler handles the HTTP request to add a follower to a user.
 // It extracts the follower and following user IDs from the request parameters and performs the follow operation.
 func (rt *_router) followUserHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	log.Println("followUserHandler called")
+	token := extractBearerToken(r)
+	if !validToken(token) {
+		http.Error(w, "Unauthorized: Invalid or missing token", http.StatusUnauthorized)
+		return
+	}
 	// Extract the ID of the user who wants to follow (followerID) and the ID of the user to be followed (followingID) from the URL parameters.
 	followerIDStr := ps.ByName("userId")
 	followingIDStr := ps.ByName("followerId")
@@ -50,7 +56,10 @@ func (rt *_router) followUserHandler(w http.ResponseWriter, r *http.Request, ps 
 		fmt.Fprintf(w, "Error adding follower: %s", err)
 		return
 	}
-
+	if token != followerID {
+		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
+		return
+	}
 	// If the operation is successful, respond with a 204 No Content status.
 	w.WriteHeader(http.StatusNoContent)
 }

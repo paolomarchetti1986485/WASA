@@ -1,7 +1,10 @@
 package api
 
 import (
+	"net/http"
 	"regexp"
+	"strconv"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -28,4 +31,19 @@ func IsValidUsername(username string) bool {
 	}
 
 	return true // Return true if the username passes both the length and pattern checks.
+}
+func extractBearerToken(r *http.Request) int {
+	authHeader := r.Header.Get("Authorization")
+	tokens := strings.Split(authHeader, " ")
+	if len(tokens) != 2 {
+		return -1
+	}
+	token, err := strconv.Atoi(tokens[1])
+	if err != nil {
+		return -1
+	}
+	return token
+}
+func validToken(token int) bool {
+	return token != -1
 }
