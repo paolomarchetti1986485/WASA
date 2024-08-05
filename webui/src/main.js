@@ -9,6 +9,10 @@ import './assets/dashboard.css'
 import './assets/main.css'
 
 const app = createApp(App)
+
+// Rimuovi il token dal localStorage all'inizializzazione dell'applicazione
+localStorage.removeItem('token');
+
 app.config.globalProperties.$axios = axios;
 app.component("ErrorMsg", ErrorMsg);
 app.component("LoadingSpinner", LoadingSpinner);
