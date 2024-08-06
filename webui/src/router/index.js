@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
+import ProfileView from '@/views/ProfileView.vue'
+
 
 const routes = [
   { path: '/login', component: LoginView },
@@ -9,10 +11,12 @@ const routes = [
     component: HomeView,
     meta: { requiresAuth: true } // Aggiungi meta per richiedere l'autenticazione
   },
-  { path: '/link1', component: HomeView, meta: { requiresAuth: true } },
-  { path: '/link2', component: HomeView, meta: { requiresAuth: true } },
-  { path: '/some/:id/link', component: HomeView, meta: { requiresAuth: true } },
-  { path: '/:pathMatch(.*)*', redirect: '/login' } // Redirezione a login per qualsiasi rotta non trovata
+  { path: '/profile/:userId',
+    name: 'Profile',
+    component: ProfileView,
+    props: true
+  },
+  { path: '/:pathMatch(.*)*', redirect: '/login' }
 ]
 
 const router = createRouter({

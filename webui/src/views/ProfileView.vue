@@ -1,10 +1,31 @@
 <template>
   <div>
-    <h1>Home Page</h1>
+    <h1 v-if="username">{{ username }}'s Profile Page</h1>
+    <h1 v-else>Loading...</h1>
     <button @click="logout">Logout</button>
     
     <div v-if="loading">Loading...</div>
     <div v-if="errormsg">{{ errormsg }}</div>
+
+    <div>
+      <p>Photos uploaded: {{ photos.length }}</p>
+      <p>Followers: <span @click="showFollowers">{{ followers.length }}</span></p>
+      <p>Following: <span @click="showFollowing">{{ following.length }}</span></p>
+    </div>
+
+    <div v-if="showFollowerList">
+      <h2>Followers</h2>
+      <ul>
+        <li v-for="follower in followers" :key="follower.userId">{{ follower.username }}</li>
+      </ul>
+    </div>
+    
+    <div v-if="showFollowingList">
+      <h2>Following</h2>
+      <ul>
+        <li v-for="followee in following" :key="followee.userId">{{ followee.username }}</li>
+      </ul>
+    </div>
 
     <div v-for="photo in photos" :key="photo.photoId" class="photo">
       <div class="photo-container">
@@ -18,6 +39,7 @@
       <div class="photo-actions">
         <button @click="toggleLike(photo)">Like</button>
         <button @click="commentPhoto(photo.photoId)">Comment</button>
+        <button @click="deletePhoto(photo.photoId)">Delete Photo</button>
       </div>
       <div v-for="comment in photo.comments" :key="comment.commentId" class="comment">
         <p>{{ comment.commentText }}</p>
@@ -36,26 +58,34 @@ export default {
       loading: false,
       errormsg: null,
       photos: [],
-      userId: localStorage.getItem('token')
+      userId: localStorage.getItem('token'),
+      username: '',
+      followers: [],
+      following: [],
+      showFollowerList: false,
+      showFollowingList: false
     };
   },
   methods: {
-    async fetchPhotos() {
+    async fetchProfile() {
       this.loading = true;
       try {
-        let response = await axios.get(`/user/${this.userId}/stream`);
-        this.photos = response.data.map(photo => ({
+        let response = await axios.get(`/user/${this.userId}/profile`);
+        this.username = response.data.username; // Assicurati che il campo "username" esista nella risposta
+        this.photos = response.data.photos.map(photo => ({
           ...photo,
           comments: photo.Comments || [],
           likes: photo.Likes || []
         }));
+        this.followers = response.data.followers;
+        this.following = response.data.following;
 
-        // Carica le immagini per ogni foto
+        // Load images for each photo
         for (let photo of this.photos) {
           this.loadImage(photo.photoId);
         }
       } catch (e) {
-        console.error("Error fetching photos:", e);
+        console.error("Error fetching profile:", e);
         this.errormsg = e.toString();
       }
       this.loading = false;
@@ -83,7 +113,7 @@ export default {
         } else {
           await axios.put(`/photos/${photo.photoId}/likes/${this.userId}`);
         }
-        this.fetchPhotos();
+        this.fetchProfile();
       } catch (e) {
         console.error("Error toggling like on photo:", e);
         this.errormsg = e.toString();
@@ -94,16 +124,25 @@ export default {
       if (!text) return;
       try {
         await axios.post(`/user/${this.userId}/photos/${photoId}/comments/`, { text });
-        this.fetchPhotos();
+        this.fetchProfile();
       } catch (e) {
         console.error("Error commenting on photo:", e);
+        this.errormsg = e.toString();
+      }
+    },
+    async deletePhoto(photoId) {
+      try {
+        await axios.delete(`/user/${this.userId}/photos/${photoId}`);
+        this.fetchProfile();
+      } catch (e) {
+        console.error("Error deleting photo:", e);
         this.errormsg = e.toString();
       }
     },
     async deleteComment(photoId, commentId) {
       try {
         await axios.delete(`/user/${this.userId}/photos/${photoId}/comments/${commentId}`);
-        this.fetchPhotos();
+        this.fetchProfile();
       } catch (e) {
         console.error("Error deleting comment:", e);
         this.errormsg = e.toString();
@@ -112,10 +151,18 @@ export default {
     logout() {
       localStorage.removeItem('token');
       this.$router.replace('/login');
+    },
+    showFollowers() {
+      this.showFollowerList = !this.showFollowerList;
+      this.showFollowingList = false;
+    },
+    showFollowing() {
+      this.showFollowingList = !this.showFollowingList;
+      this.showFollowerList = false;
     }
   },
   mounted() {
-    this.fetchPhotos();
+    this.fetchProfile();
   }
 }
 </script>
