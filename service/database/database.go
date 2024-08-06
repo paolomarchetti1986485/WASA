@@ -30,6 +30,10 @@ type AppDatabase interface {
 	GetUserFollowing(userId int) ([]User, error)
 	Ping() error
 	GetAllUsers() ([]User, error)
+	GetPhotoData(photoID int) ([]byte, error)
+	GetCommentById(commentID int) (Comment, error)
+	GetUserProfile(userId int) (Profile, error) // New method
+
 }
 
 type appdbimpl struct {

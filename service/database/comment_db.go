@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 )
 
@@ -57,4 +58,18 @@ func (db *appdbimpl) RemoveComment(commentID int) error {
 
 	// Return nil (no error) if the operation is successful.
 	return nil
+}
+
+// GetCommentById retrieves a comment by its ID.
+func (db *appdbimpl) GetCommentById(commentID int) (Comment, error) {
+	var comment Comment
+	query := "SELECT CommentID, PhotoID, UserID, CommentText, Timestamp FROM Comments WHERE CommentID = ?"
+	err := db.c.QueryRow(query, commentID).Scan(&comment.CommentID, &comment.PhotoID, &comment.UserID, &comment.CommentText, &comment.Timestamp)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return comment, fmt.Errorf("comment not found")
+		}
+		return comment, fmt.Errorf("error retrieving comment: %w", err)
+	}
+	return comment, nil
 }

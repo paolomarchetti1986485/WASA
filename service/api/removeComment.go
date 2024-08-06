@@ -29,6 +29,19 @@ func (rt *_router) removeCommentHandler(w http.ResponseWriter, r *http.Request, 
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
+	// Retrieve the comment to check its author.
+	comment, err := rt.db.GetCommentById(commentId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Failed to retrieve comment")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Ensure the user trying to delete the comment is the author of the comment.
+	if token != comment.UserID {
+		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
+		return
+	}
 	// Call the RemoveComment method in the database to delete the comment.
 	err = rt.db.RemoveComment(commentId)
 	if err != nil {

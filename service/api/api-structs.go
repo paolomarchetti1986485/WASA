@@ -55,6 +55,7 @@ type Photo struct {
 
 // Profile represents a user's full profile, including followers, following, and photos.
 type Profile struct {
+	Username  string           `json:"username"`
 	Followers []database.User  `json:"followers"`
 	Following []database.User  `json:"following"`
 	Photos    []database.Photo `json:"photos"`

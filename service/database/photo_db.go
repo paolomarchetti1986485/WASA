@@ -59,3 +59,11 @@ func (db *appdbimpl) RemovePhoto(photoID int) error {
 	// Return nil if the operation is successful (no error).
 	return nil
 }
+func (db *appdbimpl) GetPhotoData(photoID int) ([]byte, error) {
+	var imageData []byte
+	err := db.c.QueryRow("SELECT PhotoData FROM Photos WHERE PhotoID = ?", photoID).Scan(&imageData)
+	if err != nil {
+		return nil, fmt.Errorf("error querying photo data: %w", err)
+	}
+	return imageData, nil
+}

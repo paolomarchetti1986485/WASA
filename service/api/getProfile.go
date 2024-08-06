@@ -2,7 +2,6 @@ package api
 
 import (
 	"WASA/service/api/reqcontext"
-	"WASA/service/database"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -17,56 +16,28 @@ func (rt *_router) getProfileHandler(w http.ResponseWriter, r *http.Request, ps 
 		http.Error(w, "Unauthorized: Invalid or missing token", http.StatusUnauthorized)
 		return
 	}
-	// Initialize slices to store followers, following users, and photos.
-	var followers []database.User
-	var following []database.User
-	var photos []database.Photo
 
 	// Extract the user ID from the URL parameters and convert it to an integer.
 	userId, err := strconv.Atoi(ps.ByName("userId"))
 	if err != nil {
-		// If the conversion fails, return an HTTP 400 Bad Request error.
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
-	// Retrieve the photos uploaded by the user.
-	photos, err = rt.db.GetUserPhotos(userId)
+	// Retrieve the user's profile information.
+	profile, err := rt.db.GetUserProfile(userId)
 	if err != nil {
-		// If the operation fails, log the error and return an HTTP 500 Internal Server Error.
-		rt.baseLogger.WithError(err).Error("Failed to get user photos")
+		rt.baseLogger.WithError(err).Error("Failed to get user profile")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Retrieve the followers of the user.
-	followers, err = rt.db.GetUserFollowers(userId)
-	if err != nil {
-		// If the operation fails, log the error and return an HTTP 500 Internal Server Error.
-		rt.baseLogger.WithError(err).Error("Failed to get user followers")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Retrieve the users that the user is following.
-	following, err = rt.db.GetUserFollowing(userId)
-	if err != nil {
-		// If the operation fails, log the error and return an HTTP 500 Internal Server Error.
-		rt.baseLogger.WithError(err).Error("Failed to get user following")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Aggregate the retrieved information into a profile struct.
-	profile := Profile{
-		Photos:    photos,
-		Followers: followers,
-		Following: following,
-	}
-	if token != userId {
+	// Check if the token matches the userId
+	if strconv.Itoa(token) != strconv.Itoa(userId) {
 		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
 		return
 	}
+
 	// Set the Content-Type header to application/json and encode the profile into JSON.
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(profile)
