@@ -229,39 +229,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Login"
-  /user:
+  /user/:
     get:
       tags: ["user"]
-      summary: List all users
-      description: Retrieve a list of all users in the WASAPhoto app.
-      operationId: listAllUsers
-      responses:
-        "200":
-          description: List of users successfully retrieved
-          content:
-            application/json:
-              schema:
-                description: User's list
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
-                minItems: 0  
-                maxItems: 1000
-        "404":
-          description: No users found
-          content:
-            application/json:
-              schema:
-                description: No users found
-                type: object
-                properties:
-                  message:
-                    description: No users found message
-                    type: string
-                    example: "No users found."
-                    pattern: '^.*?$'
-                    minLength: 3
-                    maxLength: 100
+      summary: Search users by their username
+      description: Retrieve a list of users whose usernames start with the provided string.
+      operationId: searchUsers
+      parameters:
+      - name: username
+        in: query
+        required: true
+        description: Prefix of the username to search for.
+        schema:
+          type: string
+          example: "john"
+    responses:
+      "200":
+        description: List of users matching the search prefix
+        content:
+          application/json:
+            schema:
+              description: User's list
+              type: array
+              items:
+                $ref: "#/components/schemas/User"
+              minItems: 0  
+              maxItems: 1000
+      "400":
+        description: Invalid or missing username parameter
+        content:
+          application/json:
+            schema:
+              description: Error message
+              type: object
+              properties:
+                message:
+                  description: Error message
+                  type: string
+                  example: "Invalid or missing username parameter."
+      "404":
+        description: No users found matching the search
+        content:
+          application/json:
+            schema:
+              description: No users found message
+              type: object
+              properties:
+                message:
+                  description: No users found message
+                  type: string
+                  example: "No users found matching the search."
   /user/{userId}:
     delete:
       tags: ["user"]
@@ -381,6 +398,15 @@ paths:
     parameters:
       - $ref: "#/components/parameters/userId"
       - $ref: "#/components/parameters/photoId"
+    get:
+      tags: ["photo"]
+      operationId: getPhoto
+      summary: Retrieve a Photo
+      description: Allow the user to see photos.
+      responses:
+        "204":
+          description: Photo retrieved successfully
+        
     delete:
       tags: ["photo"]
       operationId: deletePhoto
