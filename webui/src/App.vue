@@ -1,17 +1,28 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import { ref, onMounted } from 'vue'
+</script>
 
-const userId = ref('')
-
-// Assicurati di caricare l'ID utente quando il componente è montato
-onMounted(() => {
-  userId.value = localStorage.getItem('token')
-})
-
-const logout = () => {
-  localStorage.removeItem('token')
-  window.location.replace('/login')
+<script>
+export default {
+	data: function(){
+		return {
+			showNavBar: this.$route.path != '/login',
+			userID: localStorage.getItem('token')
+		}
+	},
+	watch: {
+		$route(to) {
+      		this.showNavBar = to.path !== '/login';
+			this.userID = localStorage.getItem('token');
+		},
+	},
+	methods: {
+		logout() {
+			localStorage.clear();
+			this.$router.replace("/login");
+		}
+	},
 }
 </script>
 
@@ -38,7 +49,7 @@ const logout = () => {
               </RouterLink>
             </li>
             <li class="nav-item">
-              <RouterLink :to="`/profile/${userId}`" class="nav-link">
+              <RouterLink :to="`/user/${userId}/profile`" class="nav-link">
                 <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#user"/></svg>
                 Profile
               </RouterLink>

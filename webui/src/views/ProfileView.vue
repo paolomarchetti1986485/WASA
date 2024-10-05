@@ -3,7 +3,20 @@
     <h1 v-if="username">{{ username }}'s Profile Page</h1>
     <h1 v-else>Loading...</h1>
     <button @click="logout">Logout</button>
-    
+    <div>
+      <button @click="editingUsername = !editingUsername">
+        {{ editingUsername ? 'Cancel' : 'Update Username' }}
+      </button>
+      <div v-if="editingUsername">
+        <input v-model="newUsername" placeholder="Enter new username" />
+        <button @click="updateUsername">Save</button>
+      </div>
+    </div>
+
+    <!-- Pulsante per caricare una nuova foto -->
+    <input type="file" @change="uploadPhoto" style="display: none;" ref="photoInput" />
+    <button @click="triggerFileInput">Upload Photo</button>
+
     <div v-if="loading">Loading...</div>
     <div v-if="errormsg">{{ errormsg }}</div>
 
@@ -61,6 +74,8 @@ export default {
       userId: localStorage.getItem('token'),
       username: '',
       followers: [],
+      newUsername: '', // Nuovo nome utente
+      editingUsername: false, // Stato per mostrare/nascondere il campo di modifica nome
       following: [],
       showFollowerList: false,
       showFollowingList: false
@@ -148,6 +163,19 @@ export default {
         this.errormsg = e.toString();
       }
     },
+    async updateUsername() {
+      try {
+        const response = await axios.put(`/user/${this.userId}/username`, {
+          username: this.newUsername
+        });
+        this.username = response.data.username; // Aggiorna il nome visualizzato
+        this.newUsername = ''; // Reset del campo di input
+        this.editingUsername = false; // Chiude la modalità di modifica
+      } catch (error) {
+        console.error("Error updating username:", error);
+        this.errormsg = error.toString();
+      }
+    },
     logout() {
       localStorage.removeItem('token');
       this.$router.replace('/login');
@@ -159,6 +187,36 @@ export default {
     showFollowing() {
       this.showFollowingList = !this.showFollowingList;
       this.showFollowerList = false;
+    },
+    // Metodo per triggerare il file input nascosto
+    triggerFileInput() {
+      if (this.$refs.photoInput) {
+        console.log("Pulsante Upload cliccato, apri il file input");
+        this.$refs.photoInput.click(); // Simula il click sul file input nascosto
+      } else {
+        console.error("Riferimento al file input non trovato");
+      }
+    },
+
+    // Metodo per gestire l'upload della foto
+    async uploadPhoto(event) {
+      const file = event.target.files[0]; // Assicurati di ottenere il file corretto
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await axios.post(`/user/${this.userId}/photos/`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${this.userId}` // Aggiungi l'header Authorization
+          }
+        });
+        console.log('Upload successful:', response.data);
+        this.fetchProfile(); // Aggiorna il profilo dopo l'upload
+      } catch (error) {
+        console.error('Errore durante l\'upload della foto:', error);
+        this.errormsg = error.toString();
+      }
     }
   },
   mounted() {

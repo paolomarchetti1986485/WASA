@@ -6,11 +6,25 @@
     <div v-if="loading">Loading...</div>
     <div v-if="errormsg">{{ errormsg }}</div>
 
+    <div class="search-bar">
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="Cerca un utente..."
+        @keydown.enter="searchUser"
+      />
+      <button @click="searchUser">Cerca</button>
+    </div>
+
     <div v-for="photo in photos" :key="photo.photoId" class="photo">
       <div class="photo-container">
         <img :src="photo.imageSrc" alt="photo" class="photo-img" @error="handleImageError" />
       </div>
       <div class="photo-info">
+        <!-- Nome utente cliccabile per reindirizzare al profilo -->
+        <p @click="goToProfile(photo.userId)" class="user-profile-link" style="cursor: pointer;">
+          Uploaded by: {{ photo.username || 'Unknown User' }}
+        </p>
         <p>Uploaded at: {{ new Date(photo.uploadDateTime).toLocaleString() }}</p>
         <p>Likes: {{ photo.likes.length }}</p>
         <p>Comments: {{ photo.comments.length }}</p>
@@ -36,10 +50,15 @@ export default {
       loading: false,
       errormsg: null,
       photos: [],
-      userId: localStorage.getItem('token')
+      userId: localStorage.getItem('token'),
+      searchQuery: '',  // Variabile per immagazzinare il testo della ricerca
+
     };
   },
   methods: {
+    goToProfile(userId) {
+      this.$router.push({ name: 'NonLoggedProfile', params: { userId: userId } });
+    },
     async fetchPhotos() {
       this.loading = true;
       try {
@@ -112,6 +131,12 @@ export default {
     logout() {
       localStorage.removeItem('token');
       this.$router.replace('/login');
+    },
+    searchUser() {
+      if (this.searchQuery) {
+        // Reindirizza alla view della ricerca passando il nome utente come parametro
+        this.$router.push(`/search?username=${this.searchQuery}`);
+      }
     }
   },
   mounted() {
