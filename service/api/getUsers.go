@@ -3,28 +3,35 @@ package api
 import (
 	"WASA/service/api/reqcontext"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 )
 
-// GetAllUsersHandler handles the API request to get all users.
-func (rt *_router) GetAllUsersHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
-	users, err := rt.db.GetAllUsers()
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+func (rt *_router) searchUserHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	// Estrazione del parametro 'username' dalla query string
+	username := r.URL.Query().Get("username")
+
+	// Se il parametro username è vuoto, restituisce un errore 400
+	if username == "" {
+		http.Error(w, "Missing username parameter", http.StatusBadRequest)
 		return
 	}
 
+	// Logica per cercare gli utenti basata sul prefisso del nome utente
+	users, err := rt.db.SearchUsersByUsernamePrefix(username)
+	if err != nil {
+		http.Error(w, "Error fetching users", http.StatusInternalServerError)
+		return
+	}
+
+	// Se non ci sono utenti, restituisci un 404
 	if len(users) == 0 {
 		http.Error(w, "No users found", http.StatusNotFound)
 		return
 	}
 
-	// Respond with the list of users in JSON format.
+	// Restituisci la lista degli utenti trovati
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(users)
-	if err != nil {
-		http.Error(w, "Failed to send response", http.StatusInternalServerError)
-	}
-
+	json.NewEncoder(w).Encode(users)
 }

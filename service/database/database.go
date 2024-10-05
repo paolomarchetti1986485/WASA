@@ -32,8 +32,9 @@ type AppDatabase interface {
 	GetAllUsers() ([]User, error)
 	GetPhotoData(photoID int) ([]byte, error)
 	GetCommentById(commentID int) (Comment, error)
-	GetUserProfile(userId int) (Profile, error) // New method
-
+	GetUserProfile(userId int) (Profile, error)
+	IsUserBanned(userId int, viewerId int) (bool, error)
+	SearchUsersByUsernamePrefix(prefix string) ([]User, error)
 }
 
 type appdbimpl struct {

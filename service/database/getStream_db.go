@@ -12,12 +12,15 @@ func (db *appdbimpl) GetUserStream(userId int) ([]Photo, error) {
 	// SQL query to retrieve photos from users that the given user is following.
 	// The photos are ordered by upload date and time in descending order.
 	query := `
-        SELECT p.PhotoID, p.UserID, p.UploadDateTime
-        FROM Photos p
-        INNER JOIN Followers f ON p.UserID = f.FollowingID
-        WHERE f.FollowerID = ?
-        ORDER BY p.UploadDateTime DESC`
-	rows, err := db.c.Query(query, userId)
+    	SELECT p.PhotoID, p.UserID, u.Username, p.UploadDateTime
+    	FROM Photos p
+    	INNER JOIN Users u ON p.UserID = u.UserID
+    	INNER JOIN Followers f ON p.UserID = f.FollowingID
+    	LEFT JOIN Banned b ON b.UserID = p.UserID AND b.BannedUserID = ?
+    	WHERE f.FollowerID = ? AND b.BannedUserID IS NULL
+    	ORDER BY p.UploadDateTime DESC`
+	rows, err := db.c.Query(query, userId, userId) // Passa due volte userId
+
 	if err != nil {
 		// If querying the database fails, return an error.
 		return nil, fmt.Errorf("error querying user stream: %w", err)
@@ -28,7 +31,7 @@ func (db *appdbimpl) GetUserStream(userId int) ([]Photo, error) {
 	for rows.Next() {
 		var photo Photo
 		// Scanning the row into the photo struct.
-		if err := rows.Scan(&photo.PhotoID, &photo.UserID, &photo.UploadDateTime); err != nil {
+		if err := rows.Scan(&photo.PhotoID, &photo.UserID, &photo.Username, &photo.UploadDateTime); err != nil {
 			// If scanning the row fails, return an error.
 			return nil, fmt.Errorf("error scanning photo: %w", err)
 		}

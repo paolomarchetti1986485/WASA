@@ -51,6 +51,7 @@ type Photo struct {
 	Comments []database.Comment `json:"comments"`
 	Likes    []database.Like    `json:"likes"`
 	UserID   int                `json:"photoid"`
+	Username string             `json:"username"`
 }
 
 // Profile represents a user's full profile, including followers, following, and photos.
@@ -78,6 +79,7 @@ func (p Photo) ToDatabaseP() database.Photo {
 		UserID:         p.UserID,
 		PhotoID:        p.ID,
 		UploadDateTime: p.DateTime,
+		Username:       p.Username,
 	}
 }
 

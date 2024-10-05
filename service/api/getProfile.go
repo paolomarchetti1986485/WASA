@@ -32,12 +32,6 @@ func (rt *_router) getProfileHandler(w http.ResponseWriter, r *http.Request, ps 
 		return
 	}
 
-	// Check if the token matches the userId
-	if strconv.Itoa(token) != strconv.Itoa(userId) {
-		http.Error(w, "Forbidden: You do not have permission to perform this action", http.StatusForbidden)
-		return
-	}
-
 	// Set the Content-Type header to application/json and encode the profile into JSON.
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(profile)

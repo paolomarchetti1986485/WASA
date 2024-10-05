@@ -12,8 +12,9 @@ type User struct {
 
 // Photo represents a photo uploaded by a user.
 type Photo struct {
-	PhotoID        int       `json:"photoId"`        // Photo's ID
-	UserID         int       `json:"userId"`         // ID of the User who posted the photo
+	PhotoID        int       `json:"photoId"` // Photo's ID
+	UserID         int       `json:"userId"`  // ID of the User who posted the photo
+	Username       string    `json:"username"`
 	UploadDateTime time.Time `json:"uploadDateTime"` // Date & time in which the photo was uploaded
 	Comments       []Comment
 	Likes          []Like

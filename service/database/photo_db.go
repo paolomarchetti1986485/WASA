@@ -40,25 +40,43 @@ func (db *appdbimpl) UploadPhoto(userID int, uploadDateTime time.Time, photoData
 // It takes the ID of the photo to be removed.
 // Returns an error if the operation fails.
 func (db *appdbimpl) RemovePhoto(photoID int) error {
-	// Prepare the SQL statement for deleting a photo from the Photos table.
-	// The statement includes a condition for the specific photo ID.
-	stmt, err := db.c.Prepare("DELETE FROM Photos WHERE PhotoID = ?")
+	// Start a transaction to ensure all deletes are performed atomically.
+	tx, err := db.c.Begin()
 	if err != nil {
-		// If preparing the statement fails, return an error.
-		return fmt.Errorf("prepare remove photo statement: %w", err)
+		return fmt.Errorf("begin transaction: %w", err)
 	}
-	defer stmt.Close() // Ensure the statement is closed after the function execution.
 
-	// Execute the prepared statement with the provided photo ID.
-	_, err = stmt.Exec(photoID)
+	// Step 1: Delete all likes associated with the photo.
+	_, err = tx.Exec("DELETE FROM Likes WHERE PhotoID = ?", photoID)
 	if err != nil {
-		// If executing the statement fails, return an error.
-		return fmt.Errorf("execute remove photo statement: %w", err)
+		tx.Rollback()
+		return fmt.Errorf("delete likes: %w", err)
+	}
+
+	// Step 2: Delete all comments associated with the photo.
+	_, err = tx.Exec("DELETE FROM Comments WHERE PhotoID = ?", photoID)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("delete comments: %w", err)
+	}
+
+	// Step 3: Delete the photo itself.
+	_, err = tx.Exec("DELETE FROM Photos WHERE PhotoID = ?", photoID)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("delete photo: %w", err)
+	}
+
+	// Commit the transaction if all deletes were successful.
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
 	}
 
 	// Return nil if the operation is successful (no error).
 	return nil
 }
+
 func (db *appdbimpl) GetPhotoData(photoID int) ([]byte, error) {
 	var imageData []byte
 	err := db.c.QueryRow("SELECT PhotoData FROM Photos WHERE PhotoID = ?", photoID).Scan(&imageData)

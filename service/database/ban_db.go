@@ -50,3 +50,11 @@ func (db *appdbimpl) UnbanUser(bannedID, userID int) error {
 
 	return nil // Return nil if the operation is successful.
 }
+func (db *appdbimpl) IsUserBanned(userId int, viewerId int) (bool, error) {
+	var count int
+	err := db.c.QueryRow("SELECT COUNT(*) FROM Banned WHERE UserID = ? AND BannedUserID = ?", userId, viewerId).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("error querying ban status: %w", err)
+	}
+	return count > 0, nil
+}

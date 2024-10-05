@@ -249,3 +249,20 @@ func (db *appdbimpl) GetAllUsers() ([]User, error) {
 
 	return users, nil
 }
+func (db *appdbimpl) SearchUsersByUsernamePrefix(prefix string) ([]User, error) {
+	rows, err := db.c.Query("SELECT UserID, Username FROM Users WHERE Username LIKE ? LIMIT 100", prefix+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(&user.UserID, &user.Username); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
