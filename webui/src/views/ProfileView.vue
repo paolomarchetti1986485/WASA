@@ -200,7 +200,23 @@ export default {
 
     // Metodo per gestire l'upload della foto
     async uploadPhoto(event) {
-      const file = event.target.files[0]; // Assicurati di ottenere il file corretto
+      const file = event.target.files[0];
+      if (!file) {
+        this.errormsg = 'Nessun file selezionato';
+        return;
+      }
+
+      // Estrai l'estensione del file
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+
+      // Verifica se l'estensione è tra quelle consentite
+      if (!allowedExtensions.includes(fileExtension)) {
+        this.errormsg = 'Il file selezionato non è un\'immagine valida. Formati supportati: jpg, jpeg, png, gif';
+        console.error(this.errormsg);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('file', file);
 
@@ -208,17 +224,25 @@ export default {
         const response = await axios.post(`/user/${this.userId}/photos/`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${this.userId}` // Aggiungi l'header Authorization
+            'Authorization': `Bearer ${this.userId}`
           }
         });
         console.log('Upload successful:', response.data);
         this.fetchProfile(); // Aggiorna il profilo dopo l'upload
       } catch (error) {
-        console.error('Errore durante l\'upload della foto:', error);
-        this.errormsg = error.toString();
+        if (error.response) {
+          console.error('Errore API:', error.response.data);
+          this.errormsg = error.response.data.message || 'Errore durante l\'upload della foto';
+        } else {
+          console.error('Errore sconosciuto:', error);
+          this.errormsg = 'Errore sconosciuto durante l\'upload della foto';
+        }
       }
     }
+
   },
+
+
   mounted() {
     this.fetchProfile();
   }
