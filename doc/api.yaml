@@ -243,42 +243,51 @@ paths:
         schema:
           type: string
           example: "john"
-    responses:
-      "200":
-        description: List of users matching the search prefix
-        content:
-          application/json:
-            schema:
-              description: User's list
-              type: array
-              items:
-                $ref: "#/components/schemas/User"
-              minItems: 0  
-              maxItems: 1000
-      "400":
-        description: Invalid or missing username parameter
-        content:
-          application/json:
-            schema:
-              description: Error message
-              type: object
-              properties:
-                message:
-                  description: Error message
-                  type: string
-                  example: "Invalid or missing username parameter."
-      "404":
-        description: No users found matching the search
-        content:
-          application/json:
-            schema:
-              description: No users found message
-              type: object
-              properties:
-                message:
-                  description: No users found message
-                  type: string
-                  example: "No users found matching the search."
+          pattern: '^.*?$'
+          minLength: 1
+          maxLength: 100
+      responses:
+        "200":
+          description: List of users matching the search prefix
+          content:
+            application/json:
+              schema:
+                description: User's list
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+                minItems: 0  
+                maxItems: 1000
+        "400":
+          description: Invalid or missing username parameter
+          content:
+            application/json:
+              schema:
+                description: Error message
+                type: object
+                properties:
+                  message:
+                    description: Error message
+                    type: string
+                    example: "Invalid or missing username parameter."
+                    pattern: '^.*?$'
+                    minLength: 1
+                    maxLength: 100
+        "404":
+          description: No users found matching the search
+          content:
+            application/json:
+              schema:
+                description: No users found message
+                type: object
+                properties:
+                  message:
+                    description: No users found message
+                    type: string
+                    example: "No users found matching the search."
+                    pattern: '^.*?$'
+                    minLength: 1
+                    maxLength: 100
   /user/{userId}:
     delete:
       tags: ["user"]
