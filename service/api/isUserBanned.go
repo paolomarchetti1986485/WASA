@@ -51,5 +51,8 @@ func (rt *_router) isUserBannedHandler(w http.ResponseWriter, r *http.Request, p
 
 	// Restituisci il risultato in formato JSON
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]bool{"isBanned": isBanned})
+	err = json.NewEncoder(w).Encode(map[string]bool{"isBanned": isBanned})
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Failed to send response")
+	}
 }

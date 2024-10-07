@@ -33,5 +33,8 @@ func (rt *_router) searchUserHandler(w http.ResponseWriter, r *http.Request, ps 
 
 	// Restituisci la lista degli utenti trovati
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+	err = json.NewEncoder(w).Encode(users)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Failed to send response")
+	}
 }

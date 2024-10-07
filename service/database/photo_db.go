@@ -45,25 +45,30 @@ func (db *appdbimpl) RemovePhoto(photoID int) error {
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
-
+	// Funzione di rollback con gestione dell'errore
+	rollback := func() {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			fmt.Printf("rollback error: %v\n", rbErr)
+		}
+	}
 	// Step 1: Delete all likes associated with the photo.
 	_, err = tx.Exec("DELETE FROM Likes WHERE PhotoID = ?", photoID)
 	if err != nil {
-		tx.Rollback()
+		rollback()
 		return fmt.Errorf("delete likes: %w", err)
 	}
 
 	// Step 2: Delete all comments associated with the photo.
 	_, err = tx.Exec("DELETE FROM Comments WHERE PhotoID = ?", photoID)
 	if err != nil {
-		tx.Rollback()
+		rollback()
 		return fmt.Errorf("delete comments: %w", err)
 	}
 
 	// Step 3: Delete the photo itself.
 	_, err = tx.Exec("DELETE FROM Photos WHERE PhotoID = ?", photoID)
 	if err != nil {
-		tx.Rollback()
+		rollback()
 		return fmt.Errorf("delete photo: %w", err)
 	}
 

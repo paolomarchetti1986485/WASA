@@ -43,6 +43,7 @@ func (rt *_router) followUserHandler(w http.ResponseWriter, r *http.Request, ps 
 
 	// Check if the followerID and followingID are the same. Users cannot follow themselves.
 	if followerID == followingID {
+		rt.baseLogger.WithError(err).Error("Failed to follow")
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Users can't follow themselves")
 		return
