@@ -1,45 +1,51 @@
 <template>
   <div>
-    <h1>Home Page</h1>
-    <button @click="logout">Logout</button>
-    
+    <div class="home-container">
+      <div class="header-container">
+        <h1 class="home-title">Home Page</h1>
+        <div class="search-bar mb-4">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Cerca un utente..."
+            @keydown.enter="searchUser"
+            class="search-input"
+          />
+          <button @click="searchUser" class="search-button">Cerca</button>
+        </div>
+      </div>
+    </div>
     <div v-if="loading">Loading...</div>
     <div v-if="errormsg">{{ errormsg }}</div>
 
-    <div class="search-bar">
-      <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="Cerca un utente..."
-        @keydown.enter="searchUser"
-      />
-      <button @click="searchUser">Cerca</button>
-    </div>
-
-    <div v-for="photo in photos" :key="photo.photoId" class="photo">
+    <div v-for="photo in photos" :key="photo.photoId" class="photo-card">
+      <div class="photo-header">
+        <p @click="goToProfile(photo.userId)" class="user-profile-link">
+          {{ photo.username || 'Unknown User' }}
+        </p>
+        <hr class="user-separator" /> <!-- Barra sotto il nome dell'utente -->
+      </div>
       <div class="photo-container">
         <img :src="photo.imageSrc" alt="photo" class="photo-img" @error="handleImageError" />
       </div>
-      <div class="photo-info">
-        <!-- Nome utente cliccabile per reindirizzare al profilo -->
-        <p @click="goToProfile(photo.userId)" class="user-profile-link" style="cursor: pointer;">
-          Uploaded by: {{ photo.username || 'Unknown User' }}
-        </p>
-        <p>Uploaded at: {{ new Date(photo.uploadDateTime).toLocaleString() }}</p>
-        <p>Likes: {{ photo.likes.length }}</p>
-        <p>Comments: {{ photo.comments.length }}</p>
-      </div>
-      <div class="photo-actions">
-        <button @click="toggleLike(photo)">Like</button>
-        <button @click="commentPhoto(photo.photoId)">Comment</button>
-      </div>
-      <div v-for="comment in photo.comments" :key="comment.commentId" class="comment">
-        <p>{{ comment.commentText }}</p>
-        <button v-if="comment.userId == userId" @click="deleteComment(photo.photoId, comment.commentId)">Delete</button>
+      <div class="photo-details">
+        <button @click="toggleLike(photo)" class="like-button">
+          ❤︎ {{ photo.likes.length }}
+        </button>
+        <div class="comments">
+          <div v-for="comment in photo.comments" :key="comment.commentId" class="comment-item">
+            <p>{{ comment.commentText }}</p>
+            <button v-if="comment.userId == userId" @click="deleteComment(photo.photoId, comment.commentId)" class="delete-button">
+              Delete
+            </button>
+          </div>
+        </div>
+        <button @click="commentPhoto(photo.photoId)" class="comment-button">Comment</button>
       </div>
     </div>
   </div>
 </template>
+
 
 <script>
 import axios from '../services/axios';
@@ -146,20 +152,134 @@ export default {
 </script>
 
 <style>
-.photo {
-  margin: 20px 0;
+/* Contenitore principale per la home */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
 }
 
+/* Stile per il titolo della home */
+.home-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+/* Stile per il pulsante della barra di ricerca */
+.search-button {
+  background-color: #0083b0;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.search-button:hover {
+  background-color: #005f7a;
+}
+/* Stile per il contenitore della barra di ricerca */
+.search-bar {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%; /* Imposta la larghezza al 100% */
+  max-width: 500px; /* Larghezza massima per evitare che sia troppo grande */
+  margin: 0 auto; /* Centra la barra di ricerca */
+}
+
+/* Stile per l'input della barra di ricerca */
+.search-input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 0;
+}
+
+/* Stile per il separatore sotto il nome dell'utente */
+.user-separator {
+  border: none;
+  border-top: 2px solid #333; /* Colore più scuro per visibilità */
+  margin: 8px 0;
+}
+
+/* Stile per l'immagine e il contenitore della foto */
 .photo-container {
-  width: 300px; /* Dimensione fissa per larghezza */
-  height: 300px; /* Dimensione fissa per altezza */
-  border: 2px solid black; /* Bordo nero */
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: auto; /* Altezza automatica per adattarsi all'immagine */
+  border: 2px solid black; /* Cornice nera uniforme */
+  border-radius: 8px;
+  margin: 0 auto 10px auto; /* Centra il contenitore orizzontalmente */
+  overflow: hidden;
+  max-width: 400px; /* Larghezza massima per centrare la foto */
 }
+
+/* Rimuovere l'overflow e assicurare il riempimento dell'immagine */
 .photo-img {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* Mantiene le proporzioni e centra l'immagine */
 }
+
+/* Stile per il contenitore delle foto */
+.photo-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 20px auto;
+  padding: 10px;
+  max-width: 500px;
+  background-color: #f9f9f9;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Stile per il nome dell'utente */
+.photo-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+/* Stile per la sezione dei dettagli della foto */
+.photo-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Stile per il pulsante di like */
+.like-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #ff5e5e;
+}
+
+/* Stile per i commenti */
+.comments {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+/* Stile per il pulsante commento */
+.comment-button {
+  background-color: #0083b0;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
 </style>

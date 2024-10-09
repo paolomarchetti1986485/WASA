@@ -13,9 +13,8 @@
       </div>
     </div>
 
-    <!-- Pulsante per caricare una nuova foto -->
-    <input type="file" @change="uploadPhoto" style="display: none;" ref="photoInput" />
-    <button @click="triggerFileInput">Upload Photo</button>
+    <!-- Pulsante per navigare alla view di upload delle foto -->
+    <button @click="goToUploadPhoto">Upload Photo</button>
 
     <div v-if="loading">Loading...</div>
     <div v-if="errormsg">{{ errormsg }}</div>
@@ -197,6 +196,9 @@ export default {
         console.error("Riferimento al file input non trovato");
       }
     },
+    goToUploadPhoto() {
+    this.$router.push('/upload');
+    },
 
     // Metodo per gestire l'upload della foto
     async uploadPhoto(event) {
@@ -241,6 +243,7 @@ export default {
     }
 
   },
+  
 
 
   mounted() {

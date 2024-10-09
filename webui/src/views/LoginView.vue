@@ -1,46 +1,29 @@
 <template>
   <div class="container-fluid h-100 m-0 p-0 login">
-    <div class="row">
-      <div class="col">
-        <ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
-      </div>
-    </div>
+    <div class="row h-100 m-0 d-flex align-items-center justify-content-center">
+      <form @submit.prevent="login" class="login-form d-flex flex-column align-items-center p-4 rounded shadow">
+        <h1 class="app-title mb-4">WASAPhoto</h1>
+        <ErrorMsg v-if="errormsg" :msg="errormsg" class="mb-3"></ErrorMsg>
 
-    <div class="row h-100 w-100 m-0">
-      <form @submit.prevent="login" class="d-flex flex-column align-items-center justify-content-center p-0">
-        <div class="row mt-2 mb-3 border-bottom">
-          <div class="col">
-            <h2 class="login-title">Login</h2>
-          </div>
-        </div>
+        <input 
+          type="text" 
+          class="form-control mb-3 login-input" 
+          v-model="identifier" 
+          maxlength="16"
+          minlength="3"
+          placeholder="Enter your username" 
+        />
 
-        <div class="row mt-2 mb-3">
-          <div class="col">
-            <input 
-              type="text" 
-              class="form-control" 
-              v-model="identifier" 
-              maxlength="16"
-              minlength="3"
-              placeholder="Enter your username" 
-            />
-          </div>
-        </div>
-
-        <div class="row mt-2 mb-5">
-          <div class="col">
-            <button class="btn btn-dark" :disabled="isButtonDisabled"> 
-              Login 
-            </button>
-          </div>
-        </div>
+        <button class="btn login-btn w-100" :disabled="isButtonDisabled"> 
+          Login 
+        </button>
       </form>
     </div>
   </div>
 </template>
 
 <script>
-import axios from '../services/axios'; // Assicurati che il percorso sia corretto
+import axios from '../services/axios';
 
 export default {
   data() {
@@ -82,10 +65,65 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+/* Sfondo a gradiente per tutta la pagina */
+.login {
+  background: linear-gradient(135deg, #00b4db, #0083b0);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+/* Box di login */
+.login-form {
+  background: white;
+  max-width: 400px;
+  width: 100%;
+  border-radius: 8px;
+  padding: 30px;
+}
 
-.login-title {
-  color: black;
+/* Titolo dell'app */
+.app-title {
+  font-size: 2rem;
+  color: #0083b0;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Stile dell'input */
+.login-input {
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Pulsante di login */
+.login-btn {
+  background-color: #0083b0;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-btn:hover {
+  background-color: #006994;
+}
+
+.login-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Messaggio di errore */
+.error-msg {
+  color: red;
+  font-size: 0.9rem;
 }
 </style>

@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import NonLoggedProfileView from '@/views/NonLoggedProfileView.vue'
+import UploadPhoto from '@/views/UploadPhotoView.vue'; 
 
 const routes = [
   { path: '/login', component: LoginView },
@@ -27,6 +28,11 @@ const routes = [
     path: '/search',
     name: 'SearchUser',
     component: () => import('../views/SearchView.vue')  // Assumi che esista una view dedicata alla ricerca
+  },
+  {
+    path: '/upload',
+    name: 'UploadPhoto',
+    component: UploadPhoto
   }
 ]
 
