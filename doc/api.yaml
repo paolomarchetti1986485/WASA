@@ -407,15 +407,6 @@ paths:
     parameters:
       - $ref: "#/components/parameters/userId"
       - $ref: "#/components/parameters/photoId"
-    get:
-      tags: ["photo"]
-      operationId: getPhoto
-      summary: Retrieve a Photo
-      description: Allow the user to see photos.
-      responses:
-        "204":
-          description: Photo retrieved successfully
-        
     delete:
       tags: ["photo"]
       operationId: deletePhoto
@@ -658,4 +649,49 @@ paths:
                     pattern: '^.*?$'
                     minLength: 3
                     maxLength: 100
-                    
+  /photos/{photoId}/image:
+      parameters:
+        - $ref: "#/components/parameters/photoId"
+      get:
+        tags: ["photo"]
+        operationId: getPhotoImage
+        summary: Retrieve a photo's image data
+        description: Allow the user to retrieve the image data of a specific photo by its ID.
+        responses:
+          "200":
+            description: Photo image retrieved successfully
+            content:
+              image/jpeg:
+                schema:
+                  type: string
+                  format: binary
+          "400":
+            description: Invalid photo ID supplied
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Invalid photo ID."
+          "404":
+            description: Photo not found
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Image not found."
+          "500":
+            description: Server error
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Failed to get photo data."                    
