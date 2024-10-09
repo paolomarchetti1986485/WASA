@@ -20,6 +20,9 @@
       
       <div v-if="loading">Loading...</div>
       <div v-if="errormsg">{{ errormsg }}</div>
+      <div v-if="photos.length === 0 && !loading" class="empty-profile-message">
+        Nessun post disponibile
+      </div>
 
       <div>
         <p>Photos uploaded: {{ photos.length }}</p>
@@ -100,23 +103,29 @@ export default {
         }
 
         let response = await axios.get(`/user/${this.userId}/profile`);
-        this.username = response.data.username; // Assicurati che il campo "username" esista nella risposta
-        this.photos = response.data.photos.map(photo => ({
-          ...photo,
-          comments: photo.Comments || [],
-          likes: photo.Likes || []
-        }));
-        this.followers = response.data.followers;
-        this.following = response.data.following;
-        this.isFollowing = this.followers.some(follower => follower.userId == this.loggedInUserId);
+        if (response.data) {
+          this.username = response.data.username; // Assicurati che il campo "username" esista nella risposta
+          this.photos = Array.isArray(response.data.photos) ? response.data.photos.map(photo => ({
+            ...photo,
+            comments: photo.Comments || [],
+            likes: photo.Likes || []
+          })) : [];
+          this.followers = response.data.followers || [];
+          this.following = response.data.following || [];
+          this.isFollowing = this.followers.some(follower => follower.userId == this.loggedInUserId);
 
-        // Verifica se l'utente loggato ha bannato l'utente visualizzato
-        let hasBannedResponse = await axios.get(`/user/${this.loggedInUserId}/ban/${this.userId}`);
-        this.hasBanned = hasBannedResponse.data.isBanned;
-          
-        // Load images for each photo
-        for (let photo of this.photos) {
-          this.loadImage(photo.photoId);
+          // Verifica se l'utente loggato ha bannato l'utente visualizzato
+          let hasBannedResponse = await axios.get(`/user/${this.loggedInUserId}/ban/${this.userId}`);
+          this.hasBanned = hasBannedResponse.data.isBanned;
+
+          // Carica le immagini per ogni foto
+          for (let photo of this.photos) {
+            this.loadImage(photo.photoId);
+          }
+        } else {
+          this.photos = [];
+          this.followers = [];
+          this.following = [];
         }
       } catch (e) {
         console.error("Error fetching profile:", e);

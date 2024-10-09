@@ -17,7 +17,9 @@
     </div>
     <div v-if="loading">Loading...</div>
     <div v-if="errormsg">{{ errormsg }}</div>
-
+    <div v-if="photos.length === 0 && !loading" class="empty-feed-message">
+      Il tuo feed è vuoto, comincia a seguire qualcuno!
+    </div>
     <div v-for="photo in photos" :key="photo.photoId" class="photo-card">
       <div class="photo-header">
         <p @click="goToProfile(photo.userId)" class="user-profile-link">
@@ -69,15 +71,20 @@ export default {
       this.loading = true;
       try {
         let response = await axios.get(`/user/${this.userId}/stream`);
-        this.photos = response.data.map(photo => ({
-          ...photo,
-          comments: photo.Comments || [],
-          likes: photo.Likes || []
-        }));
+        if (response.data && Array.isArray(response.data)) {
+          this.photos = response.data.map(photo => ({
+            ...photo,
+            comments: photo.Comments || [],
+            likes: photo.Likes || []
+          }));
 
-        // Carica le immagini per ogni foto
-        for (let photo of this.photos) {
-          this.loadImage(photo.photoId);
+          // Carica le immagini per ogni foto
+          for (let photo of this.photos) {
+            this.loadImage(photo.photoId);
+          }
+        } else {
+          // Se non ci sono dati o è null, assegna un array vuoto
+          this.photos = [];
         }
       } catch (e) {
         console.error("Error fetching photos:", e);
@@ -85,6 +92,7 @@ export default {
       }
       this.loading = false;
     },
+
     async loadImage(photoId) {
       try {
         const response = await axios.get(`/photos/${photoId}/image`, { responseType: 'blob' });

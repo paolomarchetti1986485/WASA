@@ -3,6 +3,10 @@
     <h1 v-if="username">{{ username }}'s Profile Page</h1>
     <h1 v-else>Loading...</h1>
     <button @click="logout">Logout</button>
+    <div v-if="photos.length === 0 && !loading" class="empty-profile-message">
+      Non hai aggiunto nessuna foto, comincia a postare!
+    </div>
+
     <div>
       <button @click="editingUsername = !editingUsername">
         {{ editingUsername ? 'Cancel' : 'Update Username' }}
@@ -85,18 +89,24 @@ export default {
       this.loading = true;
       try {
         let response = await axios.get(`/user/${this.userId}/profile`);
-        this.username = response.data.username; // Assicurati che il campo "username" esista nella risposta
-        this.photos = response.data.photos.map(photo => ({
-          ...photo,
-          comments: photo.Comments || [],
-          likes: photo.Likes || []
-        }));
-        this.followers = response.data.followers;
-        this.following = response.data.following;
+        if (response.data) {
+          this.username = response.data.username; // Assicurati che il campo "username" esista nella risposta
+          this.photos = Array.isArray(response.data.photos) ? response.data.photos.map(photo => ({
+            ...photo,
+            comments: photo.Comments || [],
+            likes: photo.Likes || []
+          })) : [];
+          this.followers = response.data.followers || [];
+          this.following = response.data.following || [];
 
-        // Load images for each photo
-        for (let photo of this.photos) {
-          this.loadImage(photo.photoId);
+          // Load images for each photo
+          for (let photo of this.photos) {
+            this.loadImage(photo.photoId);
+          }
+        } else {
+          this.photos = [];
+          this.followers = [];
+          this.following = [];
         }
       } catch (e) {
         console.error("Error fetching profile:", e);
@@ -198,54 +208,8 @@ export default {
     },
     goToUploadPhoto() {
     this.$router.push('/upload');
-    },
-
-    // Metodo per gestire l'upload della foto
-    async uploadPhoto(event) {
-      const file = event.target.files[0];
-      if (!file) {
-        this.errormsg = 'Nessun file selezionato';
-        return;
-      }
-
-      // Estrai l'estensione del file
-      const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-
-      // Verifica se l'estensione è tra quelle consentite
-      if (!allowedExtensions.includes(fileExtension)) {
-        this.errormsg = 'Il file selezionato non è un\'immagine valida. Formati supportati: jpg, jpeg, png, gif';
-        console.error(this.errormsg);
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      try {
-        const response = await axios.post(`/user/${this.userId}/photos/`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${this.userId}`
-          }
-        });
-        console.log('Upload successful:', response.data);
-        this.fetchProfile(); // Aggiorna il profilo dopo l'upload
-      } catch (error) {
-        if (error.response) {
-          console.error('Errore API:', error.response.data);
-          this.errormsg = error.response.data.message || 'Errore durante l\'upload della foto';
-        } else {
-          console.error('Errore sconosciuto:', error);
-          this.errormsg = 'Errore sconosciuto durante l\'upload della foto';
-        }
-      }
     }
-
   },
-  
-
-
   mounted() {
     this.fetchProfile();
   }
