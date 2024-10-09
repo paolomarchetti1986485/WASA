@@ -3,6 +3,7 @@ package api
 import (
 	"WASA/service/api/reqcontext"
 	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -27,7 +28,7 @@ func (rt *_router) getPhotoHandler(w http.ResponseWriter, r *http.Request, ps ht
 	// Retrieve the photo data from the database.
 	imageData, err := rt.db.GetPhotoData(photoID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "Image not found", http.StatusNotFound)
 		} else {
 			rt.baseLogger.WithError(err).Error("Failed to get photo data")
@@ -38,5 +39,9 @@ func (rt *_router) getPhotoHandler(w http.ResponseWriter, r *http.Request, ps ht
 
 	// Set the Content-Type header to image/jpeg and write the image data to the response.
 	w.Header().Set("Content-Type", "image/jpeg")
-	w.Write(imageData)
+	_, err = w.Write(imageData)
+	if err != nil {
+		// Se la scrittura della risposta fallisce, logga l'errore
+		rt.baseLogger.WithError(err).Error("Failed to write image data to response")
+	}
 }

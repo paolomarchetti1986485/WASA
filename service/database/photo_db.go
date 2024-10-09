@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -48,7 +49,7 @@ func (db *appdbimpl) RemovePhoto(photoID int) error {
 	// Funzione di rollback con gestione dell'errore
 	rollback := func() {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			fmt.Printf("rollback error: %v\n", rbErr)
+			log.Printf("rollback error: %v\n", rbErr)
 		}
 	}
 	// Step 1: Delete all likes associated with the photo.

@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -12,7 +13,7 @@ func (db *appdbimpl) GetUserByUsername(username string) (int, error) {
 	// Query to find the user ID based on the username.
 	err := db.c.QueryRow("SELECT UserID FROM Users WHERE Username = ?", username).Scan(&userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			// No user was found with the given username.
 			return 0, err
 		}
@@ -264,5 +265,10 @@ func (db *appdbimpl) SearchUsersByUsernamePrefix(prefix string) ([]User, error) 
 		}
 		users = append(users, user)
 	}
+	// Aggiungi il controllo per rows.Err() qui
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %w", err)
+	}
+
 	return users, nil
 }

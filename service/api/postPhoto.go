@@ -26,14 +26,6 @@ func (rt *_router) uploadPhotoHandler(w http.ResponseWriter, r *http.Request, ps
 		return
 	}
 
-	// Parse the multipart form in the request with a 10 MB size limit.
-	err = r.ParseMultipartForm(10 << 20) // 10 MB
-	if err != nil {
-		// If parsing the multipart form fails, return an error.
-		http.Error(w, "Could not parse multipart form", http.StatusBadRequest)
-		return
-	}
-
 	// Retrieve the file from the form data.
 	file, _, err := r.FormFile("file")
 	if err != nil {

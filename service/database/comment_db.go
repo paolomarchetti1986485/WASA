@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -66,7 +67,7 @@ func (db *appdbimpl) GetCommentById(commentID int) (Comment, error) {
 	query := "SELECT CommentID, PhotoID, UserID, CommentText, Timestamp FROM Comments WHERE CommentID = ?"
 	err := db.c.QueryRow(query, commentID).Scan(&comment.CommentID, &comment.PhotoID, &comment.UserID, &comment.CommentText, &comment.Timestamp)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return comment, fmt.Errorf("comment not found")
 		}
 		return comment, fmt.Errorf("error retrieving comment: %w", err)
