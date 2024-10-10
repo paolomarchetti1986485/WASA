@@ -38,23 +38,30 @@ func (db *appdbimpl) AddUser(username string) (int, error) {
 // Takes the user's ID and the new username.
 // Returns an error if the operation fails.
 func (db *appdbimpl) UpdateUsername(userID int, newUsername string) error {
+	// Controlla se il nuovo nome utente è già presente nel database
+	var count int
+	err := db.c.QueryRow("SELECT COUNT(*) FROM Users WHERE Username = ?", newUsername).Scan(&count)
+	if err != nil {
+		return fmt.Errorf("query for existing username: %w", err)
+	}
+	if count > 0 {
+		// Se il nome utente è già utilizzato, ritorna un errore specifico
+		return fmt.Errorf("username already exists")
+	}
+
 	// Prepare the SQL statement for updating a user's username in the Users table.
-	// The statement includes the new username and the user's ID as conditions.
 	stmt, err := db.c.Prepare("UPDATE Users SET Username = ? WHERE UserID = ?")
 	if err != nil {
-		// If preparing the statement fails, return an error.
 		return fmt.Errorf("prepare update username statement: %w", err)
 	}
-	defer stmt.Close() // Ensure the statement is closed after the function execution.
+	defer stmt.Close()
 
 	// Execute the prepared statement with the new username and the user's ID.
 	_, err = stmt.Exec(newUsername, userID)
 	if err != nil {
-		// If executing the statement fails, return an error.
 		return fmt.Errorf("execute update username statement: %w", err)
 	}
 
-	// Return nil if the operation is successful (no error).
 	return nil
 }
 

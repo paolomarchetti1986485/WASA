@@ -3,9 +3,10 @@ package api
 import (
 	"WASA/service/api/reqcontext"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // UsernameUpdateRequest represents the request structure to update a username.
@@ -47,9 +48,14 @@ func (rt *_router) setUsernameHandler(w http.ResponseWriter, r *http.Request, ps
 	// Call the UpdateUsername method to update the user's username in the database.
 	err = rt.db.UpdateUsername(userId, req.Username)
 	if err != nil {
-		// If the UpdateUsername operation fails, log the error and return an HTTP 500 Internal Server Error.
+		if err.Error() == "username already exists" {
+			// Se il nome utente è già in uso, restituisci un HTTP 409 Conflict
+			http.Error(w, "username already exists", http.StatusConflict)
+			return
+		}
+		// Se c'è un altro tipo di errore, restituisci un HTTP 500 Internal Server Error
 		rt.baseLogger.WithError(err).Error("Failed to update username")
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Failed to update username", http.StatusInternalServerError)
 		return
 	}
 
