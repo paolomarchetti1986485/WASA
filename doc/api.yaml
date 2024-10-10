@@ -241,6 +241,7 @@ paths:
         required: true
         description: Prefix of the username to search for.
         schema:
+          description: String format
           type: string
           example: "john"
           pattern: '^.*?$'
@@ -663,6 +664,7 @@ paths:
             content:
               image/jpeg:
                 schema:
+                  description: Image retrieved successfully
                   type: string
                   format: binary
           "400":
@@ -670,9 +672,11 @@ paths:
             content:
               application/json:
                 schema:
+                  description: Invalid ID
                   type: object
                   properties:
                     message:
+                      description: Invalid ID
                       type: string
                       example: "Invalid photo ID."
           "404":
@@ -680,9 +684,11 @@ paths:
             content:
               application/json:
                 schema:
+                  description: Photo not exists
                   type: object
                   properties:
                     message:
+                      description: Photo not found
                       type: string
                       example: "Image not found."
           "500":
@@ -690,8 +696,10 @@ paths:
             content:
               application/json:
                 schema:
+                  description: Error from the server
                   type: object
                   properties:
                     message:
+                      description: Impossible to get photo data
                       type: string
                       example: "Failed to get photo data."                    
