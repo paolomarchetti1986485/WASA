@@ -71,6 +71,8 @@ export default {
       this.loading = true;
       try {
         let response = await axios.get(`/user/${this.userId}/stream`);
+        console.log("API Response:", response.data);
+
         if (response.data && Array.isArray(response.data)) {
           this.photos = response.data.map(photo => ({
             ...photo,
@@ -88,7 +90,7 @@ export default {
         }
       } catch (e) {
         console.error("Error fetching photos:", e);
-        this.errormsg = e.toString();
+        this.errormsg = e.response ? e.response.data.message : e.message;
       }
       this.loading = false;
     },

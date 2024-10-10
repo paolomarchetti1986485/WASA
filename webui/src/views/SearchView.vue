@@ -8,7 +8,10 @@
     <ul v-if="users.length > 0">
       <li v-for="user in users" :key="user.userId">
         <!-- Reindirizza al profilo utente -->
-        <router-link :to="`/user/${user.userId}/nonlogged-profile`">{{ user.username }}</router-link>
+        <router-link 
+          :to="user.userId == loggedInUserId ? `/user/${user.userId}/profile` : `/user/${user.userId}/nonlogged-profile`">
+          {{ user.username }}
+        </router-link>
       </li>
     </ul>
     <div v-else> Nessun utente trovato.</div>
@@ -25,6 +28,8 @@ export default {
       users: [],
       loading: false,
       errormsg: null,
+      loggedInUserId: localStorage.getItem('token') // Aggiungi qui l'ID dell'utente loggato
+
     };
   },
   methods: {

@@ -6,17 +6,14 @@
     <div v-else>
       <h1 v-if="username">{{ username }}'s Profile Page</h1>
       <h1 v-else>Loading...</h1>
-      <div v-if="!isOwner">
-        <button @click="toggleFollow">
-          {{ isFollowing ? 'Unfollow' : 'Follow' }}
-        </button>
-        <!-- Pulsante Ban/Unban -->
-        <button @click="toggleBan">
-          {{ hasBanned ? 'Unban' : 'Ban' }}
-        </button>
-
-      </div>
-      <button @click="logout">Logout</button>
+    
+      <button @click="toggleFollow">
+        {{ isFollowing ? 'Unfollow' : 'Follow' }}
+      </button>
+      <!-- Pulsante Ban/Unban -->
+      <button @click="toggleBan">
+        {{ hasBanned ? 'Unban' : 'Ban' }}
+      </button>
       
       <div v-if="loading">Loading...</div>
       <div v-if="errormsg">{{ errormsg }}</div>

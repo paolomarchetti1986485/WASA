@@ -6,33 +6,45 @@ import NonLoggedProfileView from '@/views/NonLoggedProfileView.vue'
 import UploadPhoto from '@/views/UploadPhotoView.vue'; 
 
 const routes = [
-  { path: '/login', component: LoginView },
+  { 
+    path: '/login', 
+    component: LoginView 
+  },
   { 
     path: '/', 
     component: HomeView,
-    meta: { requiresAuth: true } // Aggiungi meta per richiedere l'autenticazione
+    meta: { requiresAuth: true } // Richiede autenticazione
   },
-  { path: '/user/:userId/profile',
+  { 
+    path: '/user/:userId/profile',
     name: 'Profile',
     component: ProfileView,
-    props: true
+    props: true,
+    meta: { requiresAuth: true } // Richiede autenticazione
   },
-  { path: '/:pathMatch(.*)*', redirect: '/login' },
   { 
     path: '/user/:userId/nonlogged-profile', 
     name: 'NonLoggedProfile', 
     component: NonLoggedProfileView,
-    props: true 
+    props: true,
+    meta: { requiresAuth: true } // Richiede autenticazione
   },
   {
     path: '/search',
     name: 'SearchUser',
-    component: () => import('../views/SearchView.vue')  // Assumi che esista una view dedicata alla ricerca
+    component: () => import('../views/SearchView.vue'),  // Assumi che esista una view dedicata alla ricerca
+    meta: { requiresAuth: true } // Richiede autenticazione
   },
   {
     path: '/upload',
     name: 'UploadPhoto',
-    component: UploadPhoto
+    component: UploadPhoto,
+    meta: { requiresAuth: true } // Richiede autenticazione
+  },
+  // Route catch-all per non trovare percorsi validi
+  { 
+    path: '/:pathMatch(.*)*', 
+    redirect: '/login' 
   }
 ]
 
@@ -42,13 +54,18 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const loggedIn = localStorage.getItem('token')
+  const token = localStorage.getItem('token');
+  console.log("Token verificato in beforeEach:", token);
 
-  if (to.matched.some(record => record.meta.requiresAuth) && !loggedIn) {
-    next('/login')
+  // Se il token è nullo o non valido, reindirizza al login
+  if (to.matched.some(record => record.meta.requiresAuth) && (!token || token === 'null' || token === 'undefined')) {
+    console.log("Token non valido o mancante, reindirizzamento a /login");
+    next('/login');
   } else {
-    next()
+    console.log("Token valido, proseguo alla rotta:", to.path);
+    next();
   }
-})
+});
+
 
 export default router

@@ -2,7 +2,7 @@
   <div>
     <h1 v-if="username">{{ username }}'s Profile Page</h1>
     <h1 v-else>Loading...</h1>
-    <button @click="logout">Logout</button>
+    
     <div v-if="photos.length === 0 && !loading" class="empty-profile-message">
       Non hai aggiunto nessuna foto, comincia a postare!
     </div>
@@ -13,7 +13,9 @@
       </button>
       <div v-if="editingUsername">
         <input v-model="newUsername" placeholder="Enter new username" />
+        
         <button @click="updateUsername">Save</button>
+        <div v-if="errormsg" class="error-message">{{ errormsg }}</div>
       </div>
     </div>
 
@@ -53,7 +55,6 @@
         <p>Comments: {{ photo.comments.length }}</p>
       </div>
       <div class="photo-actions">
-        <button @click="toggleLike(photo)">Like</button>
         <button @click="commentPhoto(photo.photoId)">Comment</button>
         <button @click="deletePhoto(photo.photoId)">Delete Photo</button>
       </div>
@@ -91,17 +92,22 @@ export default {
         let response = await axios.get(`/user/${this.userId}/profile`);
         if (response.data) {
           this.username = response.data.username; // Assicurati che il campo "username" esista nella risposta
+
+          // Garantisce che photos sia sempre un array
           this.photos = Array.isArray(response.data.photos) ? response.data.photos.map(photo => ({
             ...photo,
             comments: photo.Comments || [],
             likes: photo.Likes || []
           })) : [];
+
           this.followers = response.data.followers || [];
           this.following = response.data.following || [];
 
           // Load images for each photo
-          for (let photo of this.photos) {
-            this.loadImage(photo.photoId);
+          if (this.photos.length > 0) {
+            for (let photo of this.photos) {
+              this.loadImage(photo.photoId);
+            }
           }
         } else {
           this.photos = [];
@@ -110,10 +116,27 @@ export default {
         }
       } catch (e) {
         console.error("Error fetching profile:", e);
-        this.errormsg = e.toString();
+        this.errormsg = e.response ? e.response.data.message : e.message;
       }
       this.loading = false;
     },
+    async checkUsernameAvailability() {
+      if (!this.newUsername.trim()) {
+        this.usernameExists = false;
+        return;
+      }
+
+      try {
+        const response = await axios.get(`/user/check-username?username=${this.newUsername}`);
+        this.usernameExists = response.data.exists; // Se il nome utente esiste già, imposta a true
+      } catch (error) {
+        // Non loggare l'errore se si tratta di un errore previsto (esempio: il server risponde con 404 se il nome utente è disponibile)
+        if (error.response && error.response.status !== 404) {
+          console.warn("Errore durante la verifica del nome utente:", error);
+        }
+      }
+    },
+
     async loadImage(photoId) {
       try {
         const response = await axios.get(`/photos/${photoId}/image`, { responseType: 'blob' });
@@ -128,20 +151,6 @@ export default {
     },
     handleImageError(event) {
       event.target.style.display = 'none'; // Nasconde l'immagine se c'è un errore
-    },
-    async toggleLike(photo) {
-      const hasLiked = photo.likes.some(like => like.userId == this.userId);
-      try {
-        if (hasLiked) {
-          await axios.delete(`/photos/${photo.photoId}/likes/${this.userId}`);
-        } else {
-          await axios.put(`/photos/${photo.photoId}/likes/${this.userId}`);
-        }
-        this.fetchProfile();
-      } catch (e) {
-        console.error("Error toggling like on photo:", e);
-        this.errormsg = e.toString();
-      }
     },
     async commentPhoto(photoId) {
       const text = prompt("Enter your comment:");
@@ -180,11 +189,28 @@ export default {
         this.username = response.data.username; // Aggiorna il nome visualizzato
         this.newUsername = ''; // Reset del campo di input
         this.editingUsername = false; // Chiude la modalità di modifica
+        this.errormsg = null; // Resetta il messaggio di errore
       } catch (error) {
-        console.error("Error updating username:", error);
-        this.errormsg = error.toString();
+        if (error.response) {
+          if (error.response.status === 409) {
+            // Codice HTTP 409: Nome utente già in uso
+            this.errormsg = 'Nome utente già in uso.';
+          } else {
+            // Qualsiasi altro errore
+            this.errormsg = 'Errore durante l\'aggiornamento del nome utente.';
+          }
+        } else {
+          // Errore generico se non ci sono risposte dal server
+          this.errormsg = 'Errore durante l\'aggiornamento del nome utente.';
+        }
       }
     },
+
+
+
+
+
+
     logout() {
       localStorage.removeItem('token');
       this.$router.replace('/login');
